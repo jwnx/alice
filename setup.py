@@ -11,7 +11,7 @@ setup(name='alice',
       install_requires=[
           'xkcdpass',
           'pathlib',
-          'python-neutronclients',
+          'python-neutronclient',
           'keystoneauth1',
           'python-keystoneclient',
           'colorama'
