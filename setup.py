@@ -15,5 +15,5 @@ setup(name='alice',
           'keystoneauth1',
           'python-keystoneclient',
           'colorama'
-      ]
+      ],
       zip_safe=False)
