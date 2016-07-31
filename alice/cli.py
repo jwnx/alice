@@ -83,7 +83,7 @@ class Cli:
                 self.v.print_red(DOT, '', MSG['ABORT'] + '\n')
                 sys.exit()
 
-    def get_input():
+    def get_input(self):
         options, remainder = getopt.getopt(sys.argv[1:], 'u:e:lk:d',
                              ['username=',
                               'email=',
