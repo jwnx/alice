@@ -53,8 +53,7 @@ class OpenstackBridge:
 
         # No environment variables found
         except Exception:
-            self.v.print_red(" :", "Admin? ", "- please, source openrc " +
-                             "to get admin privileges.")
+            self.v.error(0)
             sys.exit()
 
 

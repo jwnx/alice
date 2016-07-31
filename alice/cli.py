@@ -6,6 +6,7 @@ import sys
 import getopt
 import sys
 
+from datetime import date
 from variables import *
 from openstack_bridge import OpenstackBridge
 
@@ -22,7 +23,7 @@ class Cli:
     # check_user_data: This method checks if any user data
     # is missing and updates it if necessary
     def check_user_data(self):
-        print(MSG['CHECK'] + '\n')
+        self.v.process(1)
         var = self.c.get_var()
         if (var['username'] == None or var['email'] == None):
             self.update_user_data()
@@ -43,7 +44,8 @@ class Cli:
     # an OpenStack user account.
     def create_user(self):
 
-        self.v.print_black(DOT, '', MSG['REGK'])
+        # self.v.print_black(DOT, '', MSG['REGK'])
+        self.v.info('Keystone: ', 3)
 
         # try:
         #     self.c.register_user()
@@ -51,7 +53,8 @@ class Cli:
         #     print 'EXCEPTION KEYSTONE ', e
         #     sys.exit()
 
-        self.v.print_black(DOT, '', MSG['REGN'])
+        # self.v.print_black(DOT, '', MSG['REGN'])
+        self.v.info('Neutron: ', 4)
 
         # try:
         #     self.c.create_network()
@@ -60,7 +63,7 @@ class Cli:
         #     sys.exit()
 
         self.add_user_to_db()
-        self.v.print_yellow(DOT, '', "Done! \n")
+        self.v.info('', 5)
 
 
     def create_user_profile(self):
@@ -90,26 +93,29 @@ class Cli:
         add = ''
         self.v.show_keystone_full()
         while (add not in yes) and (add not in no):
-            add = raw_input(MSG['ADD'])
+            add = self.v.input_add()
             if (add not in yes) and (add not in no):
-                self.v.print_yellow(DOT, '', MSG['CERROR'])
+                self.v.error(1)
+                sys.exit()
             if add in yes:
                 self.create_user()
             else:
-                self.v.print_red(DOT, '', MSG['ABORT'] + '\n')
+                self.v.error(2)
                 sys.exit()
 
     def list(self):
         db = self.c.db
         db.connect()
         fetch = db.select_all()
-        for linha in fetch:
-            print linha
+        for row in fetch:
+            print '%d   %s    %s   %s  %d days' %(row[0], row[1], row[2], row[3], (date.today() - row[3]).days)
+        db.close()
 
     def get_input(self):
 
         ADD_FLAG  = False
         LIST_FLAG = False
+        HELP_FLAG = False
 
         try:
             options, remainder = getopt.getopt(sys.argv[1:], 'au:e:ldh',
@@ -126,7 +132,7 @@ class Cli:
         except getopt.GetoptError,e:
             print e
             self.usage()
-            sys.exit(2)
+            sys.exit()
 
         for opt, arg in options:
             if opt in ('-u', '--username'):
@@ -139,11 +145,13 @@ class Cli:
                 ADD_FLAG = True
             elif opt in ('-l', '--list'):
                 LIST_FLAG = True
+            elif opt in ('-h', '--help'):
+                HELP_FLAG = True
 
         if(ADD_FLAG != LIST_FLAG):
             if(ADD_FLAG):
                 self.check_user_data()
             if(LIST_FLAG):
                 self.list()
-        else:
+        elif ((ADD_FLAG == True and ADD_FLAG == LIST_FLAG) or HELP_FLAG):
             self.usage()
