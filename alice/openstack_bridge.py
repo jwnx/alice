@@ -108,8 +108,9 @@ class OpenstackBridge:
                                   email            = self.user['email'],
                                   enabled          = self.user['enabled'])
 
-        # update tenant_id
+        # update tenant_id and user_id
         self.network['tenant_id'] = p.id
+        self.user['user_id'] = u.id
 
         # set projects quota
         self.update_project_quota(p.id)

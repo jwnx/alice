@@ -15,6 +15,7 @@ class DBManager():
         sql = 'create table if not exists ' + self.table_name + ' (id integer not null primary key autoincrement, \
                        name text not null,  \
                        email text not null, \
+                       user_id text not null, \
                        created_at date not null)'
 
         self.cursor.execute(sql)
@@ -37,8 +38,8 @@ class DBManager():
 
     def insert_record(self, user):
         today = date.today()
-        sql = 'insert into ' + self.table_name +  ' (name, email, created_at) values (?, ?, ?)'
-        self.cursor.execute(sql, (user['username'], user['email'], today))
+        sql = 'insert into ' + self.table_name +  ' (name, email, user_id, created_at) values (?, ?, ?, ?)'
+        self.cursor.execute(sql, (user['username'], user['email'], user['user_id'], today))
         self.conn.commit()
 
     def reconnect(self):

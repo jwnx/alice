@@ -1,24 +1,11 @@
-yes = set(['yes', 'y', 'ye'])
-no = set(['no', 'n'])
-edit = set(['e', 'edit'])
-DOT = ' :'
-ARW = ' >'
-
-MSG = {'CHECK' : '\n : Checking missing variables.. ',
-       'ADD'   : '\n : Do you want to add the above user? (y/n) ',
-       'CERROR': 'Wrong input',
-       'ABORT' : 'Aborting...',
-       'REGK'  : 'Registering user in keystone...',
-       'REGN'  : 'Creating base network settings...'}
-
-
 user           = {'username'        : None,
                   'email'           : None,
                   'enabled'         : True,
                   'domain'          : 'default',
                   'project_name'    : 'project',
                   'password'        : 'pass',
-                  'ext_net'         : ''}
+                  'ext_net'         : '',
+                  'user_id'         : ''}
 
 network         = {'name'           : "Intranet",
                    'admin_state_up' : True,

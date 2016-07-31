@@ -6,9 +6,6 @@ import readline, glob
 from variables import *
 
 
-yes  = set(['yes', 'y', 'ye'])
-no   = set(['no', 'n'])
-edit = set(['e', 'edit'])
 DOT  = ' :'
 ARW  = ' >'
 
@@ -61,10 +58,10 @@ class View:
         self.print_red('\n' + DOT, '', ERROR[intg])
 
     def notify(self, intg):
-        self.print_yellow(DOT, ' ', MSG[intg])
+        self.print_yellow(DOT, '', MSG[intg])
 
     def info(self, title, intg):
-        self.print_black(DOT, ' ' + title , MSG[intg])
+        self.print_black(DOT, title , MSG[intg])
 
     def process(self, intg):
         print('\n' + DOT + ' ' + MSG[intg])

@@ -1,5 +1,6 @@
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
+from prettytable import PrettyTable
 import readline, glob
 import os
 import sys
@@ -9,6 +10,10 @@ import sys
 from datetime import date
 from variables import *
 from openstack_bridge import OpenstackBridge
+
+yes  = set(['yes', 'y', 'ye'])
+no   = set(['no', 'n'])
+edit = set(['e', 'edit'])
 
 class Cli:
 
@@ -45,6 +50,7 @@ class Cli:
     def create_user(self):
 
         # self.v.print_black(DOT, '', MSG['REGK'])
+        print
         self.v.info('Keystone: ', 3)
 
         # try:
@@ -63,7 +69,7 @@ class Cli:
         #     sys.exit()
 
         self.add_user_to_db()
-        self.v.info('', 5)
+        self.v.notify(5)
 
 
     def create_user_profile(self):
@@ -107,9 +113,10 @@ class Cli:
         db = self.c.db
         db.connect()
         fetch = db.select_all()
+        t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
         for row in fetch:
-            print '%d   %s    %s   %s  %d days' %(row[0], row[1], row[2], row[3], (date.today() - row[3]).days)
-        db.close()
+            t.add_row([row[0], row[1], row[2], row[4], (date.today() - row[4]).days])
+        print t
 
     def get_input(self):
 
