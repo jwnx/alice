@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-import cli
+from alice import cli
 cli = Cli()
 cli.get_input()

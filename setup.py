@@ -14,7 +14,8 @@ setup(name='alice',
           'python-neutronclient',
           'keystoneauth1',
           'python-keystoneclient',
-          'colorama'
+          'colorama',
+          'python-novaclient'
       ],
       scripts=['bin/alice'],
       zip_safe=False)
