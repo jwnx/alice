@@ -15,6 +15,7 @@ class Cli:
     def __init__(self):
         self.c = OpenstackBridge()
         self.v = self.c.v
+        self.get_input()
 
     # check_user_data: This method checks if any user data
     # is missing and updates it if necessary
@@ -81,3 +82,23 @@ class Cli:
             else:
                 self.v.print_red(DOT, '', MSG['ABORT'] + '\n')
                 sys.exit()
+
+    def get_input():
+        options, remainder = getopt.getopt(sys.argv[1:], 'u:e:lk:d',
+                             ['username=',
+                              'email=',
+                              'public-key=',
+                              'set-limits',
+                              'disable'])
+
+        for opt, arg in options:
+            if opt in ('-u', '--username'):
+                cli.c.set('username', arg)
+            elif opt in ('-e', '--email'):
+                cli.c.set('email', arg)
+            elif opt in ('-k', '--public-key'):
+                cli.c.set('public_key', arg)
+            elif opt == '--disable':
+                cli.c.set('enabled', False)
+
+        self.check_user_data()

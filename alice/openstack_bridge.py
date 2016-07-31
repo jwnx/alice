@@ -1,7 +1,9 @@
-# from neutronclient.v2_0 import client as nclient
-# from keystoneauth1.identity import v3
-# from keystoneauth1 import session
-# from keystoneclient.v3 import client
+from neutronclient.v2_0 import client as nclient
+from novaclient import vclient
+from keystoneauth1 import loading
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
+from keystoneclient.v3 import client
 from os import environ as env
 from view import View
 import sys
@@ -13,13 +15,13 @@ class OpenstackBridge:
 
     v = None
 
-    user_variables = {'username'    : None,
-                      'email'       : None,
-                      'enabled'     : True,
-                      'domain'      : 'default',
-                      'project_name': 'project',
-                      'password'    : 'pass',
-                      'ext_net'     : '2f487de7-1695-475d-8345-4e6e681f699a'}
+    user_variables = {'username'        : None,
+                      'email'           : None,
+                      'enabled'         : True,
+                      'domain'          : 'default',
+                      'project_name'    : 'project',
+                      'password'        : 'pass',
+                      'ext_net'         : ''}
 
     network         = {'name'           : "Intranet",
                        'admin_state_up' : True,
@@ -34,9 +36,16 @@ class OpenstackBridge:
                        'enable_dhcp'    : True
                       }
 
+    quota           = {'instances'      : 4,
+                       'cores'          : 8,
+                       'ram'            : 4096,
+                       'floating_ips'   : 4
+                      }
+
 
     def __init__(self):
         self.v = View(self)
+        self.user_variables['ext_net'] = env['OS_EXT_NET']
 
     def get(self, data):
         return self.user_variables[data]
@@ -80,15 +89,28 @@ class OpenstackBridge:
 
 
 
+    def nova_auth(self):
+        loader = loading.get_plugin_loader('password')
+        auth = loader.load_from_options(auth_url=env['OS_AUTH_URL'],
+                                        username=env['OS_USERNAME'],
+                                        password=env['OS_PASSWORD'],
+                                        project_name=env['OS_PROJECT_NAME'])
+
+        sess = session.Session(auth=auth)
+        nova = vclient.Client(2, session=sess)
+
+        return nova
+
+
     # TODO: Check if public keys path is valid
-    def getPubKey(self, file_name):
-        try:
-            full_path = Path(file_name).expanduser()
-            pub_key = open(str(full_path)).read()
-        except Exception as e:
-            print_red("\n :", "", "Invalid public key path (%s)" % file_name)
-            print_red(" :", "", "Aborting...")
-            sys.exit()
+    # def getPubKey(self, file_name):
+    #     try:
+    #         full_path = Path(file_name).expanduser()
+    #         pub_key = open(str(full_path)).read()
+    #     except Exception as e:
+    #         print_red("\n :", "", "Invalid public key path (%s)" % file_name)
+    #         print_red(" :", "", "Aborting...")
+    #         sys.exit()
 
 
     # neutron_auth: Connects with neutrons auth server and
@@ -105,64 +127,74 @@ class OpenstackBridge:
     # keystone setup: user, project and role setup.
     def register_user(self):
 
-        # keystone = self.keystone_auth()
+        keystone = self.keystone_auth()
+        nova     = self.nova_auth()
 
-        # p = keystone.projects.create(name    = self.get('project_name'),
-        #                              domain  = self.get('domain'),
-        #                              enabled = self.get('enabled'))
-        #
-        # u = keystone.users.create(name             = self.get('username'),
-        #                           default_project  = p,
-        #                           domain           = self.get('domain'),
-        #                           password         = self.get('password'),
-        #                           email            = self.get('email'),
-        #                           enabled          = self.get('enabled'))
+        p = keystone.projects.create(name    = self.get('project_name'),
+                                     domain  = self.get('domain'),
+                                     enabled = self.get('enabled'))
 
-        # self.network['tenant_id'] = p.id
-        # os.system("openstack role add --project %s --user %s user" %(p.id, u.id))
-        return 0
+        u = keystone.users.create(name             = self.get('username'),
+                                  default_project  = p,
+                                  domain           = self.get('domain'),
+                                  password         = self.get('password'),
+                                  email            = self.get('email'),
+                                  enabled          = self.get('enabled'))
+
+        self.network['tenant_id'] = p.id
+        self.update_project_quota(p.id)
+        os.system("openstack role add --project %s --user %s user" %(p.id, u.id))
+
+    # update_project_quota: Updates a given project's quota
+    # by using quota dict
+    def update_project_quota(tenant_id, self):
+        nova.quotas.update(tenant_id,
+                           intances=self.quota['instances'],
+                           cores=self.quota['cores'],
+                           ram=self.quota['ram'],
+                           floating_ips=self.quota['floating_ips'])
 
     # create_network: Method responsible for setting up all
     # necessary steps for a basic project network environment.
     def create_network(self):
-        return 0
-        # # Authenticate
-        # neutron = self.neutron_auth()
-        #
-        # # Create network
-        # ntwk = neutron.create_network({'network':self.network})
-        #
-        # # Create subnet
-        # self.subnet['network_id'] = ntwk['network']['id']
-        # sbnt = neutron.create_subnet({'subnet':self.subnet})
-        #
-        # # Create router
-        # rtr = neutron.create_router({'router':
-        #                    {'name':'router',
-        #                     'tenant_id': self.network['tenant_id']}})
-        #
-        # # Add ext-net gateway to router
-        # neutron.add_gateway_router(rtr['router']['id'],
-        #                            {'network_id': self.get('ext_net')})
-        #
-        # # Add created subnet interface to router
-        # neutron.add_interface_router(rtr['router']['id'],
-        #                             {'subnet_id': sbnt['subnet']['id']})
-        #
-        # # Find ID of security_group based on project_id
-        # sc_grp = self.find_secgroup(neutron, self.network['tenant_id'])
-        #
-        # # Create SSH rule
-        # neutron.create_security_group_rule(
-        #        {'security_group_rule': {'direction':'ingress',
-        #                                 'port_range_min':'22',
-        #                                 'port_range_max':'22',
-        #                                 'ethertype':'IPv4',
-        #                                 'protocol':'tcp',
-        #                                 'security_group_id': sc_grp}})
-        # # Create ping rule
-        # neutron.create_security_group_rule(
-        #        {'security_group_rule': {'direction':'ingress',
-        #                                 'ethertype':'IPv4',
-        #                                 'protocol':'icmp',
-        #                                 'security_group_id': sc_grp}})
+
+        # Authenticate
+        neutron = self.neutron_auth()
+
+        # Create network
+        ntwk = neutron.create_network({'network':self.network})
+
+        # Create subnet
+        self.subnet['network_id'] = ntwk['network']['id']
+        sbnt = neutron.create_subnet({'subnet':self.subnet})
+
+        # Create router
+        rtr = neutron.create_router({'router':
+                           {'name':'router',
+                            'tenant_id': self.network['tenant_id']}})
+
+        # Add ext-net gateway to router
+        neutron.add_gateway_router(rtr['router']['id'],
+                                   {'network_id': self.get('ext_net')})
+
+        # Add created subnet interface to router
+        neutron.add_interface_router(rtr['router']['id'],
+                                    {'subnet_id': sbnt['subnet']['id']})
+
+        # Find ID of security_group based on project_id
+        sc_grp = self.find_secgroup(neutron, self.network['tenant_id'])
+
+        # Create SSH rule
+        neutron.create_security_group_rule(
+               {'security_group_rule': {'direction':'ingress',
+                                        'port_range_min':'22',
+                                        'port_range_max':'22',
+                                        'ethertype':'IPv4',
+                                        'protocol':'tcp',
+                                        'security_group_id': sc_grp}})
+        # Create ping rule
+        neutron.create_security_group_rule(
+               {'security_group_rule': {'direction':'ingress',
+                                        'ethertype':'IPv4',
+                                        'protocol':'icmp',
+                                        'security_group_id': sc_grp}})
