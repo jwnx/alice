@@ -14,15 +14,7 @@ class DBManager():
         self.connect()
 
     def connect(self):
-        try:
-            self.db = dataset.connect(self.location)
-        except:
-            con = connect(database='postgres', user='alice', host='localhost')
-            con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur = con.cursor()
-            cur.execute('CREATE DATABASE alice')
-            cur.close()
-            con.close()
+        self.db = dataset.connect()
 
     def drop(self):
         self.db['user'].drop()
