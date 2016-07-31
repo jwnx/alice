@@ -15,7 +15,8 @@ setup(name='alice',
           'keystoneauth1',
           'python-keystoneclient',
           'colorama',
-          'python-novaclient'
+          'python-novaclient',
+          'prettytable'
       ],
       scripts=['bin/alice'],
       zip_safe=False)
