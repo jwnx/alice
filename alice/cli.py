@@ -3,6 +3,8 @@ from pathlib import Path
 import readline, glob
 import os
 import sys
+import getopt
+import sys
 
 from variables import *
 from openstack_bridge import OpenstackBridge
@@ -27,6 +29,15 @@ class Cli:
         self.create_user_profile()
         self.keystone_confirmation()
 
+
+
+    def add_user_to_db(self):
+        db = self.c.db
+        db.connect()
+        db.create_database()
+        db.insert_record(self.c.user)
+        db.close()
+
     # create_user: Method responsible for calling
     # both keystone and neutron methods for Creating
     # an OpenStack user account.
@@ -34,20 +45,21 @@ class Cli:
 
         self.v.print_black(DOT, '', MSG['REGK'])
 
-        try:
-            self.c.register_user()
-        except Exception as e:
-            print 'EXCEPTION KEYSTONE ', e
-            sys.exit()
+        # try:
+        #     self.c.register_user()
+        # except Exception as e:
+        #     print 'EXCEPTION KEYSTONE ', e
+        #     sys.exit()
 
         self.v.print_black(DOT, '', MSG['REGN'])
 
-        try:
-            self.c.create_network()
-        except Exception as e:
-            print 'EXCEPTION NEUTRON ', e
-            sys.exit()
+        # try:
+        #     self.c.create_network()
+        # except Exception as e:
+        #     print 'EXCEPTION NEUTRON ', e
+        #     sys.exit()
 
+        self.add_user_to_db()
         self.v.print_yellow(DOT, '', "Done! \n")
 
 
@@ -70,6 +82,10 @@ class Cli:
                 self.v.input_format(ARW, var, "%s: " % var.title())
         print
 
+    def usage(self):
+        print("alice --add -u=username -e=email")
+        print("alice --list")
+
     def keystone_confirmation(self):
         add = ''
         self.v.show_keystone_full()
@@ -83,22 +99,51 @@ class Cli:
                 self.v.print_red(DOT, '', MSG['ABORT'] + '\n')
                 sys.exit()
 
+    def list(self):
+        db = self.c.db
+        db.connect()
+        fetch = db.select_all()
+        for linha in fetch:
+            print linha
+
     def get_input(self):
-        options, remainder = getopt.getopt(sys.argv[1:], 'u:e:lk:d',
-                             ['username=',
+
+        ADD_FLAG  = False
+        LIST_FLAG = False
+
+        try:
+            options, remainder = getopt.getopt(sys.argv[1:], 'au:e:ldh',
+                             ['add',
+                              'username=',
                               'email=',
-                              'public-key=',
-                              'set-limits',
+                              'list',
+                              'help',
                               'disable'])
+            if not options:
+                print 'No options supplied'
+                self.usage()
+
+        except getopt.GetoptError,e:
+            print e
+            self.usage()
+            sys.exit(2)
 
         for opt, arg in options:
             if opt in ('-u', '--username'):
-                cli.c.set('username', arg)
+                self.c.set('username', arg)
             elif opt in ('-e', '--email'):
-                cli.c.set('email', arg)
-            elif opt in ('-k', '--public-key'):
-                cli.c.set('public_key', arg)
+                self.c.set('email', arg)
             elif opt == '--disable':
-                cli.c.set('enabled', False)
+                self.c.set('enabled', False)
+            elif opt in ('-a','--add'):
+                ADD_FLAG = True
+            elif opt in ('-l', '--list'):
+                LIST_FLAG = True
 
-        self.check_user_data()
+        if(ADD_FLAG != LIST_FLAG):
+            if(ADD_FLAG):
+                self.check_user_data()
+            if(LIST_FLAG):
+                self.list()
+        else:
+            self.usage()

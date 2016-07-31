@@ -9,3 +9,6 @@
 
 # SWP files
 *.swp
+
+# DB file
+*.db
