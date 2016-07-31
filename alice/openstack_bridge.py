@@ -1,5 +1,5 @@
 from neutronclient.v2_0 import client as nclient
-from novaclient import vclient
+from novaclient import client as vclient
 from keystoneauth1 import loading
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
