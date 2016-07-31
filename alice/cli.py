@@ -1,14 +1,11 @@
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
-import readline, glob
 import os
 import sys
 import getopt
-import sys
 
 from datetime import date
-from variables import *
 from openstack_bridge import OpenstackBridge
 
 yes  = set(['yes', 'y', 'ye'])
@@ -36,7 +33,6 @@ class Cli:
         self.keystone_confirmation()
 
 
-
     def add_user_to_db(self):
         db = self.c.db
         db.connect()
@@ -49,7 +45,6 @@ class Cli:
     # an OpenStack user account.
     def create_user(self):
 
-        # self.v.print_black(DOT, '', MSG['REGK'])
         print
         self.v.info('Keystone: ', 3)
 
@@ -92,8 +87,15 @@ class Cli:
         print
 
     def usage(self):
-        print("alice --add -u=username -e=email")
-        print("alice --list")
+        print("usage: alice [-a] [-l] [-u USERNAME] [-e EMAIL]")
+        print("\noptional arguments:")
+        print(" -h, --help                 Shows this help message and exit.")
+        print(" -a, --add                  Creates a new user and project in OpenStack.")
+        print(" -u, --username USERNAME    Specify the USERNAME to be used when adding a new user.")
+        print(" -e, --email    EMAIL       Specify the EMAIL to be used when adding a new user.")
+        print("     --disable              Disables the user that is being created.")
+        print(" -l, --list                 Lists all users added to Openstack by alice.")
+        # print("LIST: " + sys.argv[0] + " --list")
 
     def keystone_confirmation(self):
         add = ''
@@ -133,7 +135,6 @@ class Cli:
                               'help',
                               'disable'])
             if not options:
-                print 'No options supplied'
                 self.usage()
 
         except getopt.GetoptError,e:
