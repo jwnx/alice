@@ -115,8 +115,10 @@ class Cli:
         fetch = db.select_all()
         t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
         for row in fetch:
-            created = row['created_at'][:row['created_at'].rindex(" ")+9]
-            created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
+            created = row['created_at']
+            if (isinstance(created, unicode)):
+                created = row['created_at'][:row['created_at'].rindex(" ")+9]
+                created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
             t.add_row([row['id'], row['name'], row['email'], created,
                      (datetime.today() - created).days])
         print t
