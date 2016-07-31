@@ -5,7 +5,7 @@ class DBManager():
 
     conn     = None
     cursor   = None
-    location = 'alice.db'
+    location = '/etc/alice/alice.db'
     table_name = 'users'
 
     def __init__(self):
