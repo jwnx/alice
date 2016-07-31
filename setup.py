@@ -16,4 +16,5 @@ setup(name='alice',
           'python-keystoneclient',
           'colorama'
       ],
+      scripts=['bin/alice'],
       zip_safe=False)
