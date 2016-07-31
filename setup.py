@@ -16,7 +16,8 @@ setup(name='alice',
           'python-keystoneclient',
           'colorama',
           'python-novaclient',
-          'prettytable'
+          'prettytable',
+          'dataset'
       ],
       scripts=['bin/alice'],
       zip_safe=False)

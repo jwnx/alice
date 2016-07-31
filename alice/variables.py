@@ -1,3 +1,7 @@
+postgresql     = {'user'            : '',
+                  'password'        : '' }
+
+
 user           = {'username'        : None,
                   'email'           : None,
                   'enabled'         : True,

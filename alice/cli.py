@@ -5,7 +5,7 @@ import os
 import sys
 import getopt
 
-from datetime import date
+from datetime import date, datetime
 from openstack_bridge import OpenstackBridge
 
 yes  = set(['yes', 'y', 'ye'])
@@ -36,9 +36,7 @@ class Cli:
     def add_user_to_db(self):
         db = self.c.db
         db.connect()
-        db.create_database()
         db.insert_record(self.c.user)
-        db.close()
 
     # create_user: Method responsible for calling
     # both keystone and neutron methods for Creating
@@ -117,7 +115,10 @@ class Cli:
         fetch = db.select_all()
         t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
         for row in fetch:
-            t.add_row([row[0], row[1], row[2], row[4], (date.today() - row[4]).days])
+            created = row['created_at'][:row['created_at'].rindex(" ")+9]
+            created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
+            t.add_row([row['id'], row['name'], row['email'], created,
+                     (datetime.today() - created).days])
         print t
 
     def get_input(self):
