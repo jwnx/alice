@@ -1,6 +1,7 @@
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
+import warnings
 import os
 import sys
 import getopt
@@ -44,6 +45,8 @@ class Cli:
     def create_user(self):
 
         print
+        warning.filterwarnings("ignore")
+
         self.v.info('Keystone: ', 3)
         self.c.register_user()
         self.v.info('Neutron: ', 4)
