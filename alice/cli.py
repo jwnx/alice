@@ -45,20 +45,9 @@ class Cli:
 
         print
         self.v.info('Keystone: ', 3)
-
-        try:
-            self.c.register_user()
-        except Exception as e:
-            print 'EXCEPTION KEYSTONE ', e
-            sys.exit()
-
+        self.c.register_user()
         self.v.info('Neutron: ', 4)
-
-        try:
-            self.c.create_network()
-        except Exception as e:
-            print 'EXCEPTION NEUTRON ', e
-            sys.exit()
+        self.c.create_network()
 
         self.add_user_to_db()
         self.v.notify(5)
