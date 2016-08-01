@@ -74,7 +74,8 @@ class OpenstackBridge:
                                         username=env['OS_USERNAME'],
                                         password=env['OS_PASSWORD'],
                                         project_name=env['OS_PROJECT_NAME'],
-                                        project_domain_name=env['OS_PROJECT_DOMAIN_ID'])
+                                        project_domain_name=env['OS_PROJECT_DOMAIN_ID'],
+                                        user_domain_name=env['OS_USER_DOMAIN_ID'])
 
         sess = session.Session(auth=auth)
         nova = vclient.Client(2, session=sess)
