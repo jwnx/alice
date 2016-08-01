@@ -114,7 +114,7 @@ class OpenstackBridge:
         self.user['user_id'] = u.id
 
         # set projects quota
-        self.update_project_quota(p.id)
+        self.update_project_quota(p.id, nova)
 
         # add user role to project
         os.system("openstack role add --project %s --user %s user" %(p.id, u.id))
@@ -123,7 +123,7 @@ class OpenstackBridge:
 
     # update_project_quota: Updates a given project's quota
     # by using quota dict
-    def update_project_quota(tenant_id, self):
+    def update_project_quota(self, tenant_id, nova):
         nova.quotas.update(tenant_id,
                            intances = var.quota['instances'],
                            cores = var.quota['cores'],
