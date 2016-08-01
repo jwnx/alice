@@ -45,7 +45,7 @@ class Cli:
     def create_user(self):
 
         print
-        warning.filterwarnings("ignore")
+        warnings.filterwarnings("ignore")
 
         self.v.info('Keystone: ', 3)
         self.c.register_user()
