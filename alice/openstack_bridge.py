@@ -73,7 +73,8 @@ class OpenstackBridge:
         auth = loader.load_from_options(auth_url=env['OS_AUTH_URL'],
                                         username=env['OS_USERNAME'],
                                         password=env['OS_PASSWORD'],
-                                        project_name=env['OS_PROJECT_NAME'])
+                                        project_name=env['OS_PROJECT_NAME'],
+                                        domain=env['OS_PROJECT_DOMAIN_ID'])
 
         sess = session.Session(auth=auth)
         nova = vclient.Client(2, session=sess)
@@ -96,7 +97,7 @@ class OpenstackBridge:
     def register_user(self):
 
         keystone = self.keystone_auth()
-        # nova     = self.nova_auth()
+        nova     = self.nova_auth()
 
         p = keystone.projects.create(name    = self.user['project_name'],
                                      domain  = self.user['domain'],
@@ -114,7 +115,7 @@ class OpenstackBridge:
         self.user['user_id'] = u.id
 
         # set projects quota
-        # self.update_project_quota(p.id, nova)
+        self.update_project_quota(p.id, nova)
 
         # add user role to project
         os.system("openstack role add --project %s --user %s user" %(p.id, u.id))
