@@ -18,7 +18,7 @@ MSG   = ["Wrong input",
          "Do you want to add the above user? (y/n) ",
          "Registering user in keystone",
          "Creating base network settings",
-         "Done!"]
+         "Done!\n"]
 
 # MSG = {'CHECK' : '\n : Checking missing variables.. ',
 #        'ADD'   : '\n : Do you want to add the above user? (y/n) ',
