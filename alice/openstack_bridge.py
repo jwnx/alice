@@ -8,6 +8,7 @@ from keystoneclient.v3 import client
 import variables as var
 from os import environ as env
 from view import View
+from models import User
 import sys
 import os
 import db
@@ -18,22 +19,23 @@ class OpenstackBridge:
 
     v       = None
     db      = None
-    user    = var.user
+    user    = None
     network = var.network
     subnet  = var.subnet
 
     def __init__(self):
+        self.user = User()
         self.v = View(self)
         self.db = db.DBManager()
 
-    def get(self, data):
-        return self.user[data]
+    # def get(self, data):
+    #     return self.user[data]
+    #
+    # def get_var(self):
+    #     return self.user
 
-    def get_var(self):
-        return self.user
-
-    def set(self, data, content):
-        self.user[data] = content
+    # def set(self, data, content):
+    #     self.user[data] = content
 
     # keystone_auth: Connects to keystone database and
     # returns an authenticated client object.
@@ -46,7 +48,7 @@ class OpenstackBridge:
                                project_name=env['OS_PROJECT_NAME'],
                                project_domain_name=env['OS_PROJECT_DOMAIN_ID'])
 
-            self.user['ext_net'] = env['OS_EXT_NET']
+            self.user.ext_net = env['OS_EXT_NET']
             sess = session.Session(auth=auth)
             keystone = client.Client(session=sess)
 
@@ -86,9 +88,9 @@ class OpenstackBridge:
     # neutron_auth: Connects with neutrons auth server and
     # returns a client object.
     def neutron_auth(self):
-        neutron = nclient.Client(username=self.user['username'],
-                                 password=self.user['password'],
-                                 tenant_name=self.user['project_name'],
+        neutron = nclient.Client(username=self.user.username,
+                                 password=self.user.password,
+                                 tenant_name=self.user.project_name,
                                  auth_url='http://controller:5000/v2.0/')
         return neutron
 
@@ -100,20 +102,21 @@ class OpenstackBridge:
         keystone = self.keystone_auth()
         nova     = self.nova_auth()
 
-        p = keystone.projects.create(name    = self.user['project_name'],
-                                     domain  = self.user['domain'],
-                                     enabled = self.user['enabled'])
+        p = keystone.projects.create(name    = self.user.project_name,
+                                     domain  = self.user.domain,
+                                     enabled = self.user.enabled)
 
-        u = keystone.users.create(name             = self.user['username'],
+        u = keystone.users.create(name             = self.user.username,
                                   default_project  = p,
-                                  domain           = self.user['domain'],
-                                  password         = self.user['password'],
-                                  email            = self.user['email'],
-                                  enabled          = self.user['enabled'])
+                                  domain           = self.user.domain,
+                                  password         = self.user.password,
+                                  email            = self.user.email,
+                                  enabled          = self.user.enabled)
 
         # update tenant_id and user_id
         self.network['tenant_id'] = p.id
-        self.user['user_id'] = u.id
+        self.user.user_id    = u.id
+        self.user.project_id = p.id
 
         # set projects quota
         self.update_project_quota(p.id, nova)
@@ -127,9 +130,9 @@ class OpenstackBridge:
     # by using quota dict
     def update_project_quota(self, tenant_id, nova):
         nova.quotas.update(tenant_id,
-                           intances = var.quota['instances'],
-                           cores = var.quota['cores'],
-                           ram = var.quota['ram'],
+                           intances     = var.quota['instances'],
+                           cores        = var.quota['cores'],
+                           ram          = var.quota['ram'],
                            floating_ips = var.quota['floating_ips'])
 
     # create_network: Method responsible for setting up all

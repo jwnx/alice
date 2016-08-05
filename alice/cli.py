@@ -17,17 +17,19 @@ class Cli:
 
     c = None
     v = None
+    user = None
 
     def __init__(self):
-        self.c = OpenstackBridge()
-        self.v = self.c.v
+        self.c     = OpenstackBridge()
+        self.v     = self.c.v
+        self.user  = self.c.user
         self.get_input()
 
     # check_user_data: This method checks if any user data
     # is missing and updates it if necessary
     def check_user_data(self):
         self.v.process(1)
-        var = self.c.get_var()
+        var = self.user.get_info()
         if (var['username'] == None or var['email'] == None):
             self.update_user_data()
         self.create_user_profile()
@@ -37,7 +39,7 @@ class Cli:
     def add_user_to_db(self):
         db = self.c.db
         db.connect()
-        db.insert_record(self.c.user)
+        db.insert_record(self.user)
 
     # create_user: Method responsible for calling
     # both keystone and neutron methods for Creating
@@ -48,30 +50,31 @@ class Cli:
         warnings.filterwarnings("ignore")
 
         self.v.info('Keystone: ', 3)
-        self.c.register_user()
+        # self.c.register_user()
         self.v.info('Neutron: ', 4)
-        self.c.create_network()
-
+        # self.c.create_network()
+        self.user.history.register()
+        # print self.user.history.to_dict()
         self.add_user_to_db()
         self.v.notify(5)
 
 
     def create_user_profile(self):
-        project_name = self.c.get('username').title() + "'s project"
+        project_name = (self.user.username).title() + "'s project"
         password = self.generate_password()
-        self.c.set('project_name', project_name)
-        self.c.set('password', password)
+        self.user.project_name = project_name
+        self.user.password = password
 
     def generate_password(self):
         wordfile = xp.locate_wordfile()
-        mywords = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=5)
+        mywords  = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=5)
         new_pass = xp.generate_xkcdpassword(mywords,delimiter=".",numwords=4)
         return new_pass
 
     def update_user_data(self):
-        user_var = self.c.get_var()
-        for var in user_var:
-            if user_var[var] is None:
+        info = self.user.get_info()
+        for var in info:
+            if info[var] is None:
                 self.v.input_format(ARW, var, "%s: " % var.title())
         print
 
@@ -119,12 +122,14 @@ class Cli:
         ADD_FLAG  = False
         LIST_FLAG = False
         HELP_FLAG = False
+        GET_FLAG  = False
 
         try:
-            options, remainder = getopt.getopt(sys.argv[1:], 'au:e:ldh',
+            options, remainder = getopt.getopt(sys.argv[1:], 'gau:e:ldh',
                              ['add',
                               'username=',
                               'email=',
+                              'get',
                               'list',
                               'help',
                               'disable'])
@@ -138,17 +143,19 @@ class Cli:
 
         for opt, arg in options:
             if opt in ('-u', '--username'):
-                self.c.set('username', arg)
+                self.user.username = arg
             elif opt in ('-e', '--email'):
-                self.c.set('email', arg)
+                self.user.email = arg
             elif opt == '--disable':
-                self.c.set('enabled', False)
+                self.user.enabled = False
             elif opt in ('-a','--add'):
                 ADD_FLAG = True
             elif opt in ('-l', '--list'):
                 LIST_FLAG = True
             elif opt in ('-h', '--help'):
                 HELP_FLAG = True
+            elif opt in ('-g', '--get'):
+                GET_FLAG = True
 
         if(ADD_FLAG != LIST_FLAG):
             if(ADD_FLAG):

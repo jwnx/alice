@@ -23,10 +23,13 @@ class DBManager():
         today = datetime.today()
         self.db.begin()
         try:
-            self.db['user'].insert(dict(name=user['username'],
-                                        email=user['email'],
-                                        user_id=user['user_id'],
-                                        created_at=today))
+            self.db['user'].insert(dict(name=user.username,
+                                        email=user.email,
+                                        user_id=user.user_id,
+                                        created_at=today,
+                                        project_id=user.project_id,
+                                        enabled=user.enabled,
+                                        history=str(user.history.to_dict())))
             self.db.commit()
         except:
             self.db.rollback()
