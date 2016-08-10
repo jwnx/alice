@@ -88,7 +88,7 @@ class OpenstackBridge:
     # neutron_auth: Connects with neutrons auth server and
     # returns a client object.
     def neutron_auth(self):
-        neutron = nclient.Client(username=self.user.username,
+        neutron = nclient.Client(username=self.user.name,
                                  password=self.user.password,
                                  tenant_name=self.user.project_name,
                                  auth_url='http://controller:5000/v2.0/')
@@ -106,7 +106,7 @@ class OpenstackBridge:
                                      domain  = self.user.domain,
                                      enabled = self.user.enabled)
 
-        u = keystone.users.create(name             = self.user.username,
+        u = keystone.users.create(name             = self.user.name,
                                   default_project  = p,
                                   domain           = self.user.domain,
                                   password         = self.user.password,

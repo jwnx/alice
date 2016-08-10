@@ -1,6 +1,7 @@
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
+from collections import namedtuple
 import warnings
 import os
 import sys
@@ -12,17 +13,20 @@ from openstack_bridge import OpenstackBridge
 yes  = set(['yes', 'y', 'ye'])
 no   = set(['no', 'n'])
 edit = set(['e', 'edit'])
+ARW  = ' >'
 
 class Cli:
 
-    c = None
-    v = None
+    c  = None
+    v  = None
+    db = None
     user = None
 
     def __init__(self):
         self.c     = OpenstackBridge()
         self.v     = self.c.v
         self.user  = self.c.user
+        self.db    = self.c.db
         self.get_input()
 
     # check_user_data: This method checks if any user data
@@ -37,8 +41,8 @@ class Cli:
 
 
     def add_user_to_db(self):
-        db = self.c.db
-        db.connect()
+        db = self.db
+        # db.connect()
         db.insert_record(self.user)
 
     # create_user: Method responsible for calling
@@ -58,6 +62,13 @@ class Cli:
         self.add_user_to_db()
         self.v.notify(5)
 
+
+    def get_user(self):
+        db = self.db
+        # User = namedtuple('User', self.user.get_variables())
+        load = db.select(self.user.name)
+        self.user.load(load)
+        print self.user
 
     def create_user_profile(self):
         project_name = (self.user.username).title() + "'s project"
@@ -104,8 +115,8 @@ class Cli:
                 sys.exit()
 
     def list(self):
-        db = self.c.db
-        db.connect()
+        db = self.db
+        # db.connect()
         fetch = db.select_all()
         t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
         for row in fetch:
@@ -143,7 +154,7 @@ class Cli:
 
         for opt, arg in options:
             if opt in ('-u', '--username'):
-                self.user.username = arg
+                self.user.name = arg
             elif opt in ('-e', '--email'):
                 self.user.email = arg
             elif opt == '--disable':
@@ -162,5 +173,8 @@ class Cli:
                 self.check_user_data()
             if(LIST_FLAG):
                 self.list()
+        elif (GET_FLAG):
+            self.get_user()
+
         elif ((ADD_FLAG == True and ADD_FLAG == LIST_FLAG) or HELP_FLAG):
             self.usage()

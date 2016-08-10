@@ -1,9 +1,9 @@
 from datetime import date, datetime
-import ast
+import json
 
 class User:
 
-    username     = None
+    name         = None
     email        = None
     password     = 'pass'
 
@@ -13,16 +13,30 @@ class User:
     domain       = 'default'
     ext_net      = ''
     enabled      = True
+    created_at   = None
 
     history = None
 
     def __init__(self):
         self.username = None
         self.email = None
+        self.created_at = datetime.today()
         self.history = History(self)
 
     def get_info(self):
-        return { 'username' : self.username, 'email': self.email }
+        return { "username" : self.username, "email": self.email }
+
+# OrderedDict([('id', 10), ('created_at', u'2016-08-10 14:49:07.032305'), ('user_id', u''), ('email', u'teste55'), ('name', u'teste55'), ('project_id', u''), ('enabled', True), ('history', u"{'disabled': [], 'enabled': [datetime.datetime(2016, 8, 10, 14, 49, 6, 998099)]}")])
+
+    def load(self, dict):
+        self.name = dict['name']
+        self.email = dict['email']
+        self.user_id = dict['user_id']
+        self.project_id = dict['project_id']
+        self.enabled = dict['enabled']
+        self.created_at = dict['created_at']
+        self.history = History(self, dict['history'])
+        print 'load ok'
 
 
 class History:
@@ -34,14 +48,7 @@ class History:
 
     def __init__(self, user, str=None):
         self.user = user
-
-        if str is not None:
-            dict = ast.literal_eval(str)
-            self.enabled = dict['enabled']
-            self.disabled = dict['disabled']
-        else:
-            self.enabled = []
-            self.disabled = []
+        self.load(str)
 
     def register(self):
         if (self.user.enabled):
@@ -49,5 +56,19 @@ class History:
         else:
             self.disabled.append(datetime.today())
 
+    def load(self, str):
+        # if str is not None:
+        #     print str
+        if str is not None:
+            print str
+            dict = json.loads(str)
+            print type(dict)
+            print dict
+            # self.enabled = dict['enabled']
+            # self.disabled = dict['disabled']
+        else:
+            self.enabled = []
+            self.disabled = []
+
     def to_dict(self):
-        return { 'enabled': self.enabled, 'disabled': self.disabled }
+        return { "enabled": self.enabled, "disabled": self.disabled }

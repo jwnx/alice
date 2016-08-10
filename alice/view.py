@@ -79,7 +79,7 @@ class View:
         return raw
 
     def show_keystone_basic(self):
-        self.print_yellow(ARW, "Username:     ", self.user.username)
+        self.print_yellow(ARW, "Username:     ", self.user.name)
         self.print_yellow(ARW, "Email:        ", self.user.email)
 
 

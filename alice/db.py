@@ -20,13 +20,12 @@ class DBManager():
         self.db['user'].drop()
 
     def insert_record(self, user):
-        today = datetime.today()
         self.db.begin()
         try:
-            self.db['user'].insert(dict(name=user.username,
+            self.db['user'].insert(dict(name=user.name,
                                         email=user.email,
                                         user_id=user.user_id,
-                                        created_at=today,
+                                        created_at=user.created_at,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
                                         history=str(user.history.to_dict())))
@@ -36,3 +35,6 @@ class DBManager():
 
     def select_all(self):
         return self.db['user']
+
+    def select(self, name):
+        return self.db['user'].find_one(name=name)
