@@ -65,13 +65,18 @@ class Cli:
 
     def get_user(self):
         db = self.db
-        # User = namedtuple('User', self.user.get_variables())
-        load = db.select(self.user.name)
+        if (self.user.email is not None):
+            load = db.select_by_email(self.user.email)
+        elif (self.user.name is not None):
+            load = db.select_by_name(self.user.name)
+        else:
+            return
+
         self.user.load(load)
-        print self.user
+        print self.v.show_keystone_basic()
 
     def create_user_profile(self):
-        project_name = (self.user.username).title() + "'s project"
+        project_name = (self.user.name).title() + "'s project"
         password = self.generate_password()
         self.user.project_name = project_name
         self.user.password = password

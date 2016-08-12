@@ -69,6 +69,9 @@ class View:
         return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)
 
 
+    def 
+
+
     def input_format(self, char, var, content):
         new_var = raw_input(Fore.BLUE + " > " + Style.RESET_ALL + content + Style.BRIGHT)
         print(Style.RESET_ALL, end="")

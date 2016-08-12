@@ -28,7 +28,7 @@ class DBManager():
                                         created_at=user.created_at,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
-                                        history=str(user.history.to_dict())))
+                                        history=user.history.to_dict()))
             self.db.commit()
         except:
             self.db.rollback()
@@ -36,5 +36,8 @@ class DBManager():
     def select_all(self):
         return self.db['user']
 
-    def select(self, name):
-        return self.db['user'].find_one(name=name)
+    def select_by_email(self, content):
+        return self.db['user'].find_one(email=content)
+
+    def select_by_name(self, content):
+        return self.db['user'].find_one(name=content)
