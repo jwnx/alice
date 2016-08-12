@@ -49,6 +49,9 @@ def show(email):
 def modify(email, attributes):
     print attributes
 
+@cli.command()
+def drop():
+    w.db.drop()
 
 def main():
     cli()
