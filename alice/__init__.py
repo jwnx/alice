@@ -1,12 +1,24 @@
 import getopt
 import sys
 
-from cli import Cli
+# from cli import Cli
+import click
 
+@click.group
+def greet():
+    pass
 
-def main():
+@click.command()
+def list():
+    print "List"
 
-    cli = Cli()
+@click.command()
+def add():
+    print "Add"
+
+# def main():
+#     cli = Cli()
 
 if __name__ == '__main__':
-    main()
+    greet()
+    print("Done")

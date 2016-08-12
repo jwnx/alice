@@ -26,9 +26,9 @@ class View:
     c = None
     user = None
 
-    def __init__(self, bridge):
-        self.c    = bridge
-        self.user = bridge.user
+    def __init__(self, wrapper):
+        self.c    = wrapper.os
+        self.user = wrapper.user
         init(autoreset=True)
 
 
@@ -62,32 +62,28 @@ class View:
     def process(self, intg):
         print('\n' + DOT + ' ' + MSG[intg])
 
-
     def is_enabled(self):
         if (self.user.enabled):
             return (Fore.GREEN + "\033[1mTrue" + Style.RESET_ALL)
         return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)
-
-
-    def 
-
-
-    def input_format(self, char, var, content):
-        new_var = raw_input(Fore.BLUE + " > " + Style.RESET_ALL + content + Style.BRIGHT)
-        print(Style.RESET_ALL, end="")
-        setattr(self.user, var, new_var)
 
     def input_add(self):
         raw = raw_input('\n' + Fore.BLACK + " > " + Style.RESET_ALL + MSG[2])
         return raw
 
     def show_keystone_basic(self):
+        print('')
         self.print_yellow(ARW, "Username:     ", self.user.name)
         self.print_yellow(ARW, "Email:        ", self.user.email)
-
 
     def show_keystone_full(self):
         self.show_keystone_basic()
         self.print_black(ARW, "Project Name: ", self.user.project_name)
         self.print_black(ARW, "Password:     ", self.user.password)
         self.print_black(ARW, "Enabled:      ", self.is_enabled())
+
+    def show_account(self):
+        print('')
+        print(' Username: %s' % self.user.name)
+        print(' Email:    %s' % self.user.email)
+        print(' Enabled:  ' + self.is_enabled())

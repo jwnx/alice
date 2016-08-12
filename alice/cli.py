@@ -2,184 +2,53 @@ from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
 from collections import namedtuple
+
 import warnings
 import os
 import sys
+import click
 import getopt
 
 from datetime import date, datetime
-from openstack_bridge import OpenstackBridge
 
-yes  = set(['yes', 'y', 'ye'])
-no   = set(['no', 'n'])
-edit = set(['e', 'edit'])
-ARW  = ' >'
+from models import Wrapper
 
-class Cli:
+w = Wrapper()
 
-    c  = None
-    v  = None
-    db = None
-    user = None
+@click.group()
+def cli():
+    pass
 
-    def __init__(self):
-        self.c     = OpenstackBridge()
-        self.v     = self.c.v
-        self.user  = self.c.user
-        self.db    = self.c.db
-        self.get_input()
-
-    # check_user_data: This method checks if any user data
-    # is missing and updates it if necessary
-    def check_user_data(self):
-        self.v.process(1)
-        var = self.user.get_info()
-        if (var['username'] == None or var['email'] == None):
-            self.update_user_data()
-        self.create_user_profile()
-        self.keystone_confirmation()
+@cli.command()
+@click.argument('name', nargs=1, type=click.STRING)
+@click.argument('email', nargs=1, type=click.STRING)
+@click.option('--auto', default=False,
+              help='Adds user automatically', is_flag=True)
+@click.option('--enabled/--disabled', default=True,
+              help='Enables or disables an user account', is_flag=True)
+def add(name, email, auto, enabled):
+    if auto is False:
+        w.verify(name, email, enabled)
+    else:
+        w.automatic(name, email, enabled)
 
 
-    def add_user_to_db(self):
-        db = self.db
-        # db.connect()
-        db.insert_record(self.user)
+@cli.command()
+def list():
+    w.list()
 
-    # create_user: Method responsible for calling
-    # both keystone and neutron methods for Creating
-    # an OpenStack user account.
-    def create_user(self):
-
-        print
-        warnings.filterwarnings("ignore")
-
-        self.v.info('Keystone: ', 3)
-        # self.c.register_user()
-        self.v.info('Neutron: ', 4)
-        # self.c.create_network()
-        self.user.history.register()
-        # print self.user.history.to_dict()
-        self.add_user_to_db()
-        self.v.notify(5)
+@cli.command()
+@click.argument('email', nargs=1, type=click.STRING)
+def show(email):
+    w.retrieve_user(email)
 
 
-    def get_user(self):
-        db = self.db
-        if (self.user.email is not None):
-            load = db.select_by_email(self.user.email)
-        elif (self.user.name is not None):
-            load = db.select_by_name(self.user.name)
-        else:
-            return
+@cli.command()
+@click.argument('email', nargs=1, type=click.STRING)
+@click.argument('attributes', nargs=-1)
+def modify(email, attributes):
+    print attributes
 
-        self.user.load(load)
-        print self.v.show_keystone_basic()
 
-    def create_user_profile(self):
-        project_name = (self.user.name).title() + "'s project"
-        password = self.generate_password()
-        self.user.project_name = project_name
-        self.user.password = password
-
-    def generate_password(self):
-        wordfile = xp.locate_wordfile()
-        mywords  = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=5)
-        new_pass = xp.generate_xkcdpassword(mywords,delimiter=".",numwords=4)
-        return new_pass
-
-    def update_user_data(self):
-        info = self.user.get_info()
-        for var in info:
-            if info[var] is None:
-                self.v.input_format(ARW, var, "%s: " % var.title())
-        print
-
-    def usage(self):
-        print("usage: alice [-a] [-l] [-u USERNAME] [-e EMAIL]")
-        print("\noptional arguments:")
-        print(" -h, --help                 Shows this help message and exit.")
-        print(" -a, --add                  Creates a new user and project in OpenStack.")
-        print(" -u, --username USERNAME    Specify the USERNAME to be used when adding a new user.")
-        print(" -e, --email    EMAIL       Specify the EMAIL to be used when adding a new user.")
-        print("     --disable              Disables the user that is being created.")
-        print(" -l, --list                 Lists all users added to Openstack by alice.")
-        # print("LIST: " + sys.argv[0] + " --list")
-
-    def keystone_confirmation(self):
-        add = ''
-        self.v.show_keystone_full()
-        while (add not in yes) and (add not in no):
-            add = self.v.input_add()
-            if (add not in yes) and (add not in no):
-                self.v.error(1)
-                sys.exit()
-            if add in yes:
-                self.create_user()
-            else:
-                self.v.error(2)
-                sys.exit()
-
-    def list(self):
-        db = self.db
-        # db.connect()
-        fetch = db.select_all()
-        t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
-        for row in fetch:
-            created = row['created_at']
-            if (isinstance(created, unicode)):
-                created = row['created_at'][:row['created_at'].rindex(" ")+9]
-                created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
-            t.add_row([row['id'], row['name'], row['email'], created,
-                     (datetime.today() - created).days])
-        print t
-
-    def get_input(self):
-
-        ADD_FLAG  = False
-        LIST_FLAG = False
-        HELP_FLAG = False
-        GET_FLAG  = False
-
-        try:
-            options, remainder = getopt.getopt(sys.argv[1:], 'gau:e:ldh',
-                             ['add',
-                              'username=',
-                              'email=',
-                              'get',
-                              'list',
-                              'help',
-                              'disable'])
-            if not options:
-                self.usage()
-
-        except getopt.GetoptError,e:
-            print e
-            self.usage()
-            sys.exit()
-
-        for opt, arg in options:
-            if opt in ('-u', '--username'):
-                self.user.name = arg
-            elif opt in ('-e', '--email'):
-                self.user.email = arg
-            elif opt == '--disable':
-                self.user.enabled = False
-            elif opt in ('-a','--add'):
-                ADD_FLAG = True
-            elif opt in ('-l', '--list'):
-                LIST_FLAG = True
-            elif opt in ('-h', '--help'):
-                HELP_FLAG = True
-            elif opt in ('-g', '--get'):
-                GET_FLAG = True
-
-        if(ADD_FLAG != LIST_FLAG):
-            if(ADD_FLAG):
-                self.check_user_data()
-            if(LIST_FLAG):
-                self.list()
-        elif (GET_FLAG):
-            self.get_user()
-
-        elif ((ADD_FLAG == True and ADD_FLAG == LIST_FLAG) or HELP_FLAG):
-            self.usage()
+def main():
+    cli()

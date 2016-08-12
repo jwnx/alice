@@ -5,4 +5,4 @@
 from alice import cli
 
 
-c = cli.Cli()
+cli.main()

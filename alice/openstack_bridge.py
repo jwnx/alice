@@ -8,7 +8,6 @@ from keystoneclient.v3 import client
 import variables as var
 from os import environ as env
 from view import View
-from models import User
 import sys
 import os
 import db
@@ -17,25 +16,12 @@ import db
 
 class OpenstackBridge:
 
-    v       = None
     db      = None
-    user    = None
     network = var.network
     subnet  = var.subnet
 
     def __init__(self):
-        self.user = User()
-        self.v = View(self)
         self.db = db.DBManager()
-
-    # def get(self, data):
-    #     return self.user[data]
-    #
-    # def get_var(self):
-    #     return self.user
-
-    # def set(self, data, content):
-    #     self.user[data] = content
 
     # keystone_auth: Connects to keystone database and
     # returns an authenticated client object.
@@ -56,7 +42,6 @@ class OpenstackBridge:
 
         # No environment variables found
         except Exception:
-            self.v.error(0)
             sys.exit()
 
 
@@ -87,36 +72,36 @@ class OpenstackBridge:
 
     # neutron_auth: Connects with neutrons auth server and
     # returns a client object.
-    def neutron_auth(self):
-        neutron = nclient.Client(username=self.user.name,
-                                 password=self.user.password,
-                                 tenant_name=self.user.project_name,
+    def neutron_auth(self, user):
+        neutron = nclient.Client(username=user.name,
+                                 password=user.password,
+                                 tenant_name=user.project_name,
                                  auth_url='http://controller:5000/v2.0/')
         return neutron
 
 
     # register_user: Method responsible for creating all basic
     # keystone setup: user, project and role setup.
-    def register_user(self):
+    def register_user(self, user):
 
         keystone = self.keystone_auth()
         nova     = self.nova_auth()
 
-        p = keystone.projects.create(name    = self.user.project_name,
-                                     domain  = self.user.domain,
-                                     enabled = self.user.enabled)
+        p = keystone.projects.create(name    = user.project_name,
+                                     domain  = user.domain,
+                                     enabled = user.enabled)
 
-        u = keystone.users.create(name             = self.user.name,
+        u = keystone.users.create(name             = user.name,
                                   default_project  = p,
-                                  domain           = self.user.domain,
-                                  password         = self.user.password,
-                                  email            = self.user.email,
-                                  enabled          = self.user.enabled)
+                                  domain           = user.domain,
+                                  password         = user.password,
+                                  email            = user.email,
+                                  enabled          = user.enabled)
 
         # update tenant_id and user_id
         self.network['tenant_id'] = p.id
-        self.user.user_id    = u.id
-        self.user.project_id = p.id
+        user.user_id    = u.id
+        user.project_id = p.id
 
         # set projects quota
         self.update_project_quota(p.id, nova)
@@ -137,10 +122,10 @@ class OpenstackBridge:
 
     # create_network: Method responsible for setting up all
     # necessary steps for a basic project network environment.
-    def create_network(self):
+    def create_network(self, user):
 
         # Authenticate
-        neutron = self.neutron_auth()
+        neutron = self.neutron_auth(user)
 
         # Create network
         ntwk = neutron.create_network({'network':var.network})
