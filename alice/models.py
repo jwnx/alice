@@ -18,6 +18,27 @@ no   = set(['no', 'n'])
 edit = set(['e', 'edit'])
 ARW  = ' >'
 
+class Parser(object):
+
+    def __init__(self, string):
+        self.element = string
+
+    def date(self):
+        if (isinstance(self.element, unicode)):
+            try:
+                created = self.element[:self.element.rindex("T")+9]
+                string = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S')
+            except:
+                created = self.element[:self.element.rindex(" ")+9]
+                string = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
+            return string
+
+        elif (isinstance(self.element, list)):
+            a = []
+            for e in self.element:
+                a.append(Parser(e).date())
+            return a
+
 class User:
 
     name         = None
@@ -49,7 +70,9 @@ class User:
         self.user_id = dict['user_id']
         self.project_id = dict['project_id']
         self.enabled = dict['enabled']
-        self.created_at = dict['created_at']
+
+        # Trata o parse de string para datetime
+        self.created_at = Parser(dict['created_at']).date()
         self.history = History(self, dict['history'])
 
 
@@ -73,11 +96,19 @@ class History:
     def load(self, str):
         if str is not None:
             dict = json.loads(str)
-            self.enabled = dict['enabled']
-            self.disabled = dict['disabled']
+            self.enabled = Parser(dict['enabled']).date()
+            self.disabled = Parser(dict['disabled']).date()
         else:
             self.enabled = []
             self.disabled = []
+
+    def last_seen(self):
+        if (self.user.enabled is True):
+            return self.enabled[-1]
+        return self.disabled[-1]
+
+    def activity(self):
+        return (datetime.today() - self.last_seen()).days
 
     def date_handler(self, obj):
         if hasattr(obj, 'isoformat'):

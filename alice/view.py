@@ -84,6 +84,14 @@ class View:
 
     def show_account(self):
         print('')
-        print(' Username: %s' % self.user.name)
-        print(' Email:    %s' % self.user.email)
+        print(' Username:   %s' % self.user.name)
+        print(' User ID:    %s' % self.user.user_id)
+        print(' Project ID: %s' % self.user.project_id)
+        print(' Email:      %s' % self.user.email)
         print(' Enabled:  ' + self.is_enabled())
+        if self.user.enabled is True:
+            print(' Activity time: %d days ' % self.user.history.activity())
+        print(' Created At: ' + self.user.created_at.strftime("%d %b %Y"))
+        print(' History Enabled:    %s' % self.user.history.enabled)
+        print(' History Disabled:   %s' % self.user.history.disabled)
+        print(' Last seen: ' + self.user.history.last_seen().strftime("%d %b %Y"))
