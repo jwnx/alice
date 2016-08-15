@@ -28,7 +28,8 @@ class DBManager():
                                         created_at=user.created_at,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
-                                        history=user.history.to_dict()))
+                                        history=user.history.json(),
+                                        description=user.description))
             self.db.commit()
         except:
             self.db.rollback()
@@ -36,8 +37,26 @@ class DBManager():
     def select_all(self):
         return self.db['user']
 
+    def update(self, user):
+        self.db.begin()
+        print user.history.json()
+        try:
+            self.db['user'].update(dict(id=user.id,
+                                        name=user.name,
+                                        email=user.email,
+                                        created_at=user.created_at,
+                                        enabled=user.enabled,
+                                        history=user.history.json(),
+                                        description=user.description), ['email'])
+            self.db.commit()
+        except:
+            self.db.rollback()
+
     def select_by_email(self, content):
         return self.db['user'].find_one(email=content)
 
     def select_by_name(self, content):
         return self.db['user'].find_one(name=content)
+
+    def select_by_id(self, id):
+        return self.db['user'].find_one(id=id)

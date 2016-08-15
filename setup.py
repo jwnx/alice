@@ -17,7 +17,8 @@ setup(name='alice',
           'colorama',
           'python-novaclient',
           'prettytable',
-          'dataset'
+          'dataset',
+          'click'
       ],
       scripts=['bin/alice'],
       zip_safe=False)

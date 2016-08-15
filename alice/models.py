@@ -3,14 +3,19 @@ from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
 from collections import namedtuple
+from tabulate import tabulate
+import timestring
 import warnings
 import os
+import copy
 import sys
+import math
 import getopt
 import json
 import click
 from openstack_bridge import OpenstackBridge
 from view import View
+import ast
 
 
 yes  = set(['yes', 'y', 'ye'])
@@ -18,29 +23,9 @@ no   = set(['no', 'n'])
 edit = set(['e', 'edit'])
 ARW  = ' >'
 
-class Parser(object):
-
-    def __init__(self, string):
-        self.element = string
-
-    def date(self):
-        if (isinstance(self.element, unicode)):
-            try:
-                created = self.element[:self.element.rindex("T")+9]
-                string = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S')
-            except:
-                created = self.element[:self.element.rindex(" ")+9]
-                string = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
-            return string
-
-        elif (isinstance(self.element, list)):
-            a = []
-            for e in self.element:
-                a.append(Parser(e).date())
-            return a
-
 class User:
 
+    id           = 0
     name         = None
     email        = None
     password     = 'pass'
@@ -52,28 +37,25 @@ class User:
     ext_net      = ''
     enabled      = True
     created_at   = None
+    description  = None
 
     history = None
 
     def __init__(self):
-        self.name = None
+        self.name  = None
         self.email = None
-        self.created_at = datetime.today()
-        self.history = History(self)
-
-    def get_info(self):
-        return { "username" : self.name, "email": self.email }
+        self.created_at = str(timestring.Date('today'))
+        self.history    = History(self)
 
     def load(self, dict):
-        self.name = dict['name']
-        self.email = dict['email']
+        self.id      = dict['id']
+        self.name    = dict['name']
+        self.email   = dict['email']
         self.user_id = dict['user_id']
-        self.project_id = dict['project_id']
         self.enabled = dict['enabled']
-
-        # Trata o parse de string para datetime
-        self.created_at = Parser(dict['created_at']).date()
-        self.history = History(self, dict['history'])
+        self.project_id = dict['project_id']
+        self.created_at = timestring.Date(dict['created_at'])
+        self.history    = History(self, dict['history'])
 
 
 class History:
@@ -87,37 +69,56 @@ class History:
         self.user = user
         self.load(str)
 
+    # Registra o momento no historico
     def register(self):
-        if (self.user.enabled):
-            self.enabled.append(datetime.today())
+        if (self.user.enabled is True):
+            self.enabled.append(str(timestring.Date('now')))
         else:
-            self.disabled.append(datetime.today())
+            self.disabled.append(str(timestring.Date('now')))
 
+
+    # Retorna o ultimo registro feito no historico do usuario
+    def last_seen(self):
+        if (self.user.enabled is True):
+            return timestring.Date(self.enabled[-1])
+        return timestring.Date(self.disabled[-1])
+
+
+    # Calcula o numero de dias ativo ou inativo
+    def activity(self):
+        r = timestring.Range(self.last_seen(), timestring.Date("now"))
+        return int(len(r)/86400)
+
+
+    # Parse a lista de datas apos acessar o banco de dados
+    def parse(self, list):
+        a = []
+        for element in list:
+            a.append(timestring.Date(element))
+        return a
+
+    # Encoda a lista de datas para entrar no banco de dados
+    def encode(self, list):
+        a = []
+        for element in list:
+            a.append(str(element))
+        return a
+
+    # Metodo que converte o objeto em json
+    def json(self):
+        enabled = self.encode(self.enabled)
+        disabled = self.encode(self.disabled)
+        return json.dumps({ "enabled": enabled, "disabled": disabled })
+
+    # Carrega uma string em json
     def load(self, str):
         if str is not None:
             dict = json.loads(str)
-            self.enabled = Parser(dict['enabled']).date()
-            self.disabled = Parser(dict['disabled']).date()
+            self.enabled  = self.parse(dict['enabled'])
+            self.disabled = self.parse(dict['disabled'])
         else:
             self.enabled = []
             self.disabled = []
-
-    def last_seen(self):
-        if (self.user.enabled is True):
-            return self.enabled[-1]
-        return self.disabled[-1]
-
-    def activity(self):
-        return (datetime.today() - self.last_seen()).days
-
-    def date_handler(self, obj):
-        if hasattr(obj, 'isoformat'):
-            return obj.isoformat()
-        else:
-            raise TypeError
-
-    def to_dict(self):
-        return json.dumps({ "enabled": self.enabled, "disabled": self.disabled }, default=self.date_handler)
 
 
 
@@ -154,6 +155,13 @@ class Wrapper:
         self.view.show_keystone_full()
         self.create_user()
 
+    def represent_int(self, obj):
+        try:
+            int(obj)
+            return True
+        except ValueError:
+            return False
+
     def generate_password(self):
         wordfile = xp.locate_wordfile()
         mywords  = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=5)
@@ -176,11 +184,47 @@ class Wrapper:
         self.add_user()
         self.view.notify(5)
 
+    def update_user(self, id, dict):
+        # Cria um novo usuario
+        new_user = User()
+
+        # Pega referencia do banco de dados
+        db = self.db
+
+        # Procura o usuario no banco de dados
+        load = None
+        if self.represent_int(id):
+            load = db.select_by_id(id)
+        elif id.find('@') >= 0:
+            load = db.select_by_email(id)
+        else:
+            load = db.select_by_name(id)
+
+        # Carrega as informacoes no objeto
+        self.user.load(load)
+
+        # Copia o usuario no novo usuario
+        new_user = copy.deepcopy(self.user)
+
+        for key in dict:
+            print key, dict[key].title()
+            setattr(new_user, key, dict[key])
+            if key == 'enabled':
+                try:
+                    v = ast.literal_eval(dict[key].title())
+                    setattr(new_user, key, v)
+                except:
+                    sys.exit(0)
+                new_user.history.register()
+
+        self.view.show_account(new_user)
+        self.db.update(new_user)
+
     def retrieve_user(self, email):
         db = self.db
         load = db.select_by_email(email)
         self.user.load(load)
-        self.view.show_account()
+        self.view.show_account(self.user)
 
     def confirmation(self):
         add = ''
@@ -197,14 +241,33 @@ class Wrapper:
                 sys.exit()
 
     def list(self):
-        db = self.db
-        fetch = db.select_all()
-        t = PrettyTable(['ID', 'Name', 'Email', 'Created At', 'Uptime'])
+        status = ''
+        db     = self.db
+        fetch  = db.select_all()
+        t      = PrettyTable(['ID', 'Name', 'Email', 'Status'])
+        status = None
+
+        t.borders = False
+        t.vrules  = 2
+
         for row in fetch:
-            created = row['created_at']
-            if (isinstance(created, unicode)):
-                created = row['created_at'][:row['created_at'].rindex(" ")+9]
-                created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
-            t.add_row([row['id'], row['name'], row['email'], created,
-                     (datetime.today() - created).days])
+            u = User()
+            u.load(row)
+
+            if u.enabled is True:
+                status = self.view.blue('Enabled')
+                t.add_row([u.id,
+                          u.name,
+                          u.email,
+                          status + ' for ' +
+                          str(u.history.activity()) + ' days'])
+            else:
+                status = 'Disabled'
+                t.add_row([self.view.dim(u.id),
+                          self.view.dim(u.name),
+                          self.view.dim(u.email),
+                          self.view.dim(status + ' for ' +
+                          str(u.history.activity()) + ' days')])
+
+
         print t

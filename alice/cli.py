@@ -15,6 +15,7 @@ from models import Wrapper
 
 w = Wrapper()
 
+
 @click.group()
 def cli():
     pass
@@ -47,7 +48,14 @@ def show(email):
 @click.argument('email', nargs=1, type=click.STRING)
 @click.argument('attributes', nargs=-1)
 def modify(email, attributes):
-    print attributes
+
+    dict = {}
+    for att in attributes:
+        key, value = att.split(":", 1)
+        dict[key] = value
+
+    w.update_user(email, dict)
+
 
 @cli.command()
 def drop():

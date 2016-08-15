@@ -49,6 +49,14 @@ class View:
               Style.RESET_ALL + Style.BRIGHT +
               title + Style.NORMAL + content)
 
+    def blue(self, char):
+        return Fore.BLUE + str(char) + Style.RESET_ALL
+
+    def magenta(self, char):
+        return Fore.MAGENTA + str(char) + Style.RESET_ALL
+
+    def dim(self, char):
+        return Fore.LIGHTBLACK_EX + Style.DIM + str(char) + Style.RESET_ALL
 
     def error(self, intg):
         self.print_red('\n' + DOT, '', ERROR[intg])
@@ -82,16 +90,13 @@ class View:
         self.print_black(ARW, "Password:     ", self.user.password)
         self.print_black(ARW, "Enabled:      ", self.is_enabled())
 
-    def show_account(self):
+    def show_account(self, user):
         print('')
-        print(' Username:   %s' % self.user.name)
-        print(' User ID:    %s' % self.user.user_id)
-        print(' Project ID: %s' % self.user.project_id)
-        print(' Email:      %s' % self.user.email)
-        print(' Enabled:  ' + self.is_enabled())
-        if self.user.enabled is True:
-            print(' Activity time: %d days ' % self.user.history.activity())
-        print(' Created At: ' + self.user.created_at.strftime("%d %b %Y"))
-        print(' History Enabled:    %s' % self.user.history.enabled)
-        print(' History Disabled:   %s' % self.user.history.disabled)
-        print(' Last seen: ' + self.user.history.last_seen().strftime("%d %b %Y"))
+        print(' Username:   %s' % user.name)
+        print(' Email:      %s' % user.email)
+        print(' Enabled:    %s' % user.enabled)
+
+        if user.enabled is True:
+            print(' Active for %d days ' % user.history.activity())
+        else:
+            print(' Deactivated for %d days' % user.history.activity())

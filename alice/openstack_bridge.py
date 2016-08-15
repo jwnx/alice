@@ -164,3 +164,13 @@ class OpenstackBridge:
                                         'ethertype':'IPv4',
                                         'protocol':'icmp',
                                         'security_group_id': sc_grp}})
+
+
+    def update_user(self, user, new_user):
+        keystone = self.keystone_auth()
+        u = keystone.get(user.name)
+        keystone.update(u, name=new_user.name,
+                           password=new_user.password,
+                           email=new_user.email,
+                           description=new_user.description,
+                           enabled=new_user.enabled)
