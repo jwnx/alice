@@ -187,8 +187,15 @@ class Wrapper:
         self.view.info(3)
         self.os.register_user(self.user)
         self.view.info(4)
-        self.os.create_network(self.user)
-        self.user.history.register()
+
+        if (self.user.enabled is False):
+            self.user.enabled = True
+            self.os.create_network(self.user)
+            self.update_user(self.user.email, {'enabled': False})
+            self.user.history.register()
+        else:
+            self.os.create_network(self.user)
+            self.user.history.register()
         # print self.user.history.json()
         self.add_user()
         self.view.notify(5)
