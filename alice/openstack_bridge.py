@@ -88,7 +88,7 @@ class OpenstackBridge:
 
         p = keystone.projects.create(name    = user.project_name,
                                      domain  = user.domain,
-                                     enabled = user.enabled)
+                                     enabled = True)
 
         u = keystone.users.create(name             = user.name,
                                   default_project  = p,
@@ -165,10 +165,10 @@ class OpenstackBridge:
                                         'security_group_id': sc_grp}})
 
 
-    def update_user(self, user, new_user):
+    def update_user(self, user_id, new_user):
         keystone = self.keystone_auth()
-        u = keystone.get(user.name)
-        keystone.update(u, name=new_user.name,
+        # u = keystone.get(user.name)
+        keystone.users.update(user_id, name=new_user.name,
                            password=new_user.password,
                            email=new_user.email,
                            description=new_user.description,

@@ -170,7 +170,7 @@ class Wrapper:
         load = None
         if self.represent_int(obj):
             load = db.select_by_id(obj)
-        elif id.find('@') >= 0:
+        elif obj.find('@') >= 0:
             load = db.select_by_email(obj)
         else:
             load = db.select_by_name(obj)
@@ -194,7 +194,7 @@ class Wrapper:
         self.add_user()
 
         if (self.user.enabled is False):
-            self.update_user(self.user.email, {'enabled':"False"})
+            self.os.update_user(self.user.user_id, self.user)
 
         self.view.notify(5)
 
@@ -224,7 +224,7 @@ class Wrapper:
                     sys.exit(0)
                 new_user.history.register()
 
-        self.os.update_user(self.user, new_user)
+        self.os.update_user(self.user.user_id, new_user)
         self.db.update(new_user)
 
     def retrieve_user(self, email):
