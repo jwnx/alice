@@ -189,7 +189,7 @@ class Wrapper:
         self.view.info(4)
         self.os.create_network(self.user)
         self.user.history.register()
-        print self.user.history.to_dict()
+        # print self.user.history.json()
         self.add_user()
         self.view.notify(5)
 
