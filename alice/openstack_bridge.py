@@ -34,7 +34,6 @@ class OpenstackBridge:
                                project_name=env['OS_PROJECT_NAME'],
                                project_domain_name=env['OS_PROJECT_DOMAIN_ID'])
 
-            self.user.ext_net = env['OS_EXT_NET']
             sess = session.Session(auth=auth)
             keystone = client.Client(session=sess)
 
@@ -141,7 +140,7 @@ class OpenstackBridge:
 
         # Add ext-net gateway to router
         neutron.add_gateway_router(rtr['router']['id'],
-                                   {'network_id': self.user['ext_net']})
+                                   {'network_id': env['OS_EXT_NET']})
 
         # Add created subnet interface to router
         neutron.add_interface_router(rtr['router']['id'],
