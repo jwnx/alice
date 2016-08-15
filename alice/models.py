@@ -1,15 +1,12 @@
-from datetime import date, datetime
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
 from collections import namedtuple
-from tabulate import tabulate
 import timestring
 import warnings
 import os
 import copy
 import sys
-import math
 import getopt
 import json
 import click
