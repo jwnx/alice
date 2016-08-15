@@ -39,7 +39,7 @@ class DBManager():
 
     def update(self, user):
         self.db.begin()
-        print user.history.json()
+
         try:
             self.db['user'].update(dict(id=user.id,
                                         name=user.name,
@@ -47,7 +47,7 @@ class DBManager():
                                         created_at=user.created_at,
                                         enabled=user.enabled,
                                         history=user.history.json(),
-                                        description=user.description), ['email'])
+                                        description=user.description), ['id'])
             self.db.commit()
         except:
             self.db.rollback()

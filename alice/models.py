@@ -54,7 +54,6 @@ class User:
         self.created_at = timestring.Date(dict['created_at'])
         self.history    = History(self, dict['history'])
 
-
 class History:
 
     user     = None
@@ -165,6 +164,19 @@ class Wrapper:
         new_pass = xp.generate_xkcdpassword(mywords,delimiter=".",numwords=4)
         return new_pass
 
+
+    def get_user(self, obj):
+        db = self.db
+        load = None
+        if self.represent_int(obj):
+            load = db.select_by_id(obj)
+        elif id.find('@') >= 0:
+            load = db.select_by_email(obj)
+        else:
+            load = db.select_by_name(obj)
+        return load
+
+
     def add_user(self):
         db = self.db
         db.insert_record(self.user)
@@ -189,13 +201,7 @@ class Wrapper:
         db = self.db
 
         # Procura o usuario no banco de dados
-        load = None
-        if self.represent_int(id):
-            load = db.select_by_id(id)
-        elif id.find('@') >= 0:
-            load = db.select_by_email(id)
-        else:
-            load = db.select_by_name(id)
+        load = self.get_user(id)
 
         # Carrega as informacoes no objeto
         self.user.load(load)
@@ -204,7 +210,6 @@ class Wrapper:
         new_user = copy.deepcopy(self.user)
 
         for key in dict:
-            print key, dict[key].title()
             setattr(new_user, key, dict[key])
             if key == 'enabled':
                 try:
@@ -214,12 +219,11 @@ class Wrapper:
                     sys.exit(0)
                 new_user.history.register()
 
-        self.view.show_account(new_user)
         self.db.update(new_user)
 
     def retrieve_user(self, email):
         db = self.db
-        load = db.select_by_email(email)
+        load = self.get_user(email)
         self.user.load(load)
         self.view.show_account(self.user)
 
