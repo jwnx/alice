@@ -185,11 +185,11 @@ class Wrapper:
         print
         warnings.filterwarnings("ignore")
         self.view.info(3)
-        # self.os.register_user(self.user)
+        self.os.register_user(self.user)
         self.view.info(4)
-        # self.os.create_network(self.user)
+        self.os.create_network(self.user)
         self.user.history.register()
-        # print self.user.history.to_dict()
+        print self.user.history.to_dict()
         self.add_user()
         self.view.notify(5)
 
@@ -219,6 +219,7 @@ class Wrapper:
                     sys.exit(0)
                 new_user.history.register()
 
+        self.os.update_user(self.user, new_user)
         self.db.update(new_user)
 
     def retrieve_user(self, email):
