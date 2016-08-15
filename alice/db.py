@@ -19,6 +19,9 @@ class DBManager():
     def drop(self):
         self.db['user'].drop()
 
+    def find_enabled(self, enabled):
+        return self.db['user'].find(enabled=enabled)
+
     def insert_record(self, user):
         self.db.begin()
         try:

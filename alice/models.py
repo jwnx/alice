@@ -184,9 +184,9 @@ class Wrapper:
     def create_user(self):
         print
         warnings.filterwarnings("ignore")
-        self.view.info('Keystone: ', 3)
+        self.view.info(3)
         # self.os.register_user(self.user)
-        self.view.info('Neutron: ', 4)
+        self.view.info(4)
         # self.os.create_network(self.user)
         self.user.history.register()
         # print self.user.history.to_dict()
@@ -231,7 +231,7 @@ class Wrapper:
         add = ''
         self.view.show_keystone_full()
         while (add not in yes) and (add not in no):
-            add = self.view.input_add()
+            add = self.view.question()
             if (add not in yes) and (add not in no):
                 self.view.error(1)
                 sys.exit()
@@ -241,10 +241,17 @@ class Wrapper:
                 self.view.error(2)
                 sys.exit()
 
-    def list(self):
+    def list(self, enabled, disabled):
+
         status = ''
         db     = self.db
-        fetch  = db.select_all()
+        fetch  = None
+
+        if (enabled != disabled):
+            fetch = db.find_enabled(enabled)
+        else:
+            fetch  = db.select_all()
+
         t      = PrettyTable(['ID', 'Name', 'Email', 'Status'])
         status = None
 

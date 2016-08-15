@@ -35,26 +35,30 @@ def add(name, email, auto, enabled):
 
 
 @cli.command()
-def list():
-    w.list()
+@click.option('--enabled', default=False,
+              help='Filters active users', is_flag=True)
+@click.option('--disabled', default=False,
+              help='Filters disabled users', is_flag=True)
+def list(enabled, disabled):
+    w.list(enabled, disabled)
 
 @cli.command()
-@click.argument('email', nargs=1, type=click.STRING)
-def show(email):
-    w.retrieve_user(email)
+@click.argument('id', nargs=1, type=click.STRING)
+def show(id):
+    w.retrieve_user(id)
 
 
 @cli.command()
-@click.argument('email', nargs=1, type=click.STRING)
+@click.argument('id', nargs=1, type=click.STRING)
 @click.argument('attributes', nargs=-1)
-def modify(email, attributes):
+def modify(id, attributes):
 
     dict = {}
     for att in attributes:
         key, value = att.split(":", 1)
         dict[key] = value
 
-    w.update_user(email, dict)
+    w.update_user(id, dict)
 
 
 @cli.command()
