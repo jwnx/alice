@@ -18,7 +18,8 @@ setup(name='alice',
           'python-novaclient',
           'prettytable',
           'dataset',
-          'click'
+          'click',
+          'timestring'
       ],
       scripts=['bin/alice'],
       zip_safe=False)
