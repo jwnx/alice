@@ -95,7 +95,7 @@ class OpenstackBridge:
                                   domain           = user.domain,
                                   password         = user.password,
                                   email            = user.email,
-                                  enabled          = user.enabled)
+                                  enabled          = True)
 
         # update tenant_id and user_id
         self.network['tenant_id'] = p.id

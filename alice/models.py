@@ -184,23 +184,18 @@ class Wrapper:
     def create_user(self):
         print
         warnings.filterwarnings("ignore")
-        self.view.info(3)
 
-        if (self.user.enabled is False):
-            self.user.enabled = True
-            self.os.register_user(self.user)
-            self.view.info(4)
-            self.os.create_network(self.user)
-            self.update_user(self.user.email, {'enabled': False})
-            self.user.enabled = False
-            # self.user.history.register()
-        else:
-            self.os.register_user(self.user)
-            self.view.info(4)
-            self.os.create_network(self.user)
-            self.user.history.register()
+        self.view.info(3)
+        self.os.register_user(self.user)
+        self.view.info(4)
+        self.os.create_network(self.user)
+        self.user.history.register()
         # print self.user.history.json()
         self.add_user()
+
+        if (self.user.enabled is False):
+            self.update_user(self.user.email, {'enabled':"False"})
+
         self.view.notify(5)
 
     def update_user(self, id, dict):
