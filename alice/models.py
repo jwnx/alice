@@ -190,7 +190,6 @@ class Wrapper:
         self.view.info(4)
         self.os.create_network(self.user)
         self.user.history.register()
-        # print self.user.history.json()
         self.add_user()
 
         if (self.user.enabled is False):
@@ -199,32 +198,29 @@ class Wrapper:
         self.view.notify(5)
 
     def update_user(self, id, dict):
-        # Cria um novo usuario
+
         new_user = User()
 
-        # Pega referencia do banco de dados
         db = self.db
-
-        # Procura o usuario no banco de dados
         load = self.get_user(id)
 
-        # Carrega as informacoes no objeto
         self.user.load(load)
 
-        # Copia o usuario no novo usuario
         new_user = copy.deepcopy(self.user)
 
         for key in dict:
             setattr(new_user, key, dict[key])
             if key == 'enabled':
-                try:
-                    v = ast.literal_eval(dict[key].title())
-                    setattr(new_user, key, v)
-                except:
-                    sys.exit(0)
+                if (isinstance(dict[key], unicode)):
+                    try:
+                        v = ast.literal_eval(dict[key].title())
+                        setattr(new_user, key, v)
+                    except:
+                        sys.exit(0)
+
                 new_user.history.register()
 
-        self.os.update_user(self.user.user_id, new_user)
+        self.os.update_user(new_user)
         self.db.update(new_user)
 
     def retrieve_user(self, email):
