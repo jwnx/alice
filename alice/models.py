@@ -213,8 +213,8 @@ class Wrapper:
         user = User()
         user.load(u)
 
-        umod["user"]["user_id"] = user.user_id
-        pmod["project"]["project_id"] = user.project_id
+        umod["user"]["id"] = user.user_id
+        pmod["project"]["id"] = user.project_id
 
         if 'name' in dict:
             user.name = dict['name']
