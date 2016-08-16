@@ -209,7 +209,7 @@ class Wrapper:
         u  = self.get_user(id)
 
         user = User()
-        user.loads(u)
+        user.load(u)
 
         if 'name' in dict:
             user.name = dict['name']
