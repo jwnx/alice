@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 from xkcdpass import xkcd_password as xp
 from pathlib import Path
 from prettytable import PrettyTable
@@ -211,8 +213,8 @@ class Wrapper:
         user = User()
         user.load(u)
 
-        umod['user']['user_id'] = user.user_id
-        pmod['project']['project_id'] = user.project_id
+        umod["user"]["user_id"] = user.user_id
+        pmod["project"]["project_id"] = user.project_id
 
         if 'name' in dict:
             user.name = dict['name']
@@ -234,11 +236,14 @@ class Wrapper:
 
         for key in dict:
             if key in um:
-                umod['user'][key] = dict[key]
+                umod["user"][key] = dict[key]
             elif key in pm:
-                pmod['project'][key] = dict[key]
+                pmod["project"][key] = dict[key]
 
-        self.os.update_user(umod, pmod)
+        ju = json.dumps(umod)
+        jp = json.dumps(pmod)
+
+        self.os.update_user(ju, jp)
         self.db.update(user)
 
     def retrieve_user(self, email):
