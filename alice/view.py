@@ -64,7 +64,7 @@ class View:
     def enabled(self, user = None):
         if (user is None):
             user = self.user
-            
+
         if (user.enabled):
             return (Fore.GREEN + "\033[1mTrue" + Style.RESET_ALL)
         return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)
@@ -84,11 +84,18 @@ class View:
         self.persistent("Password:       %s" % self.user.password)
         self.persistent("Enabled:        %s" % self.enabled())
 
-    def show_account(self, user):
+    def show_project(self, user, p):
         print('')
+
         self.info('Username:   %s' % user.name)
         self.info('Email:      %s' % user.email)
         self.info('Enabled:    %s' % self.enabled(user))
+        print('')
+        self.info('Project Name:   %s' % p.name)
+        self.info('Description:    %s' % p.email)
+        self.info('Enabled:        %s' % self.enabled(p))
+
+        print('')
 
         if user.enabled is True:
             self.info('Active for %d days ' % user.history.activity())

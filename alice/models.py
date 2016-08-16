@@ -227,7 +227,8 @@ class Wrapper:
         db = self.db
         load = self.get_user(email)
         self.user.load(load)
-        self.view.show_account(self.user)
+        p = self.os.get_project(self.user)
+        self.view.show_project(self.user, p)
 
     def confirmation(self):
         add = ''

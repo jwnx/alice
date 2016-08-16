@@ -109,7 +109,6 @@ class OpenstackBridge:
         os.system("openstack role add --project %s --user %s user" %(p.id, u.id))
 
 
-
     # update_project_quota: Updates a given project's quota
     # by using quota dict
     def update_project_quota(self, tenant_id, nova):
@@ -172,3 +171,11 @@ class OpenstackBridge:
                            email=user.email,
                            description=user.description,
                            enabled=user.enabled)
+
+    def get_user(self, user):
+        keystone = self.keystone_auth()
+        return keystone.users.get(user.user_id)
+
+    def get_project(self, user):
+        keystone = self.keystone.auth()
+        return keystone.projects.get(user.project_id)
