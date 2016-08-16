@@ -201,20 +201,14 @@ class Wrapper:
 
     def update_user(self, id, dict):
 
-        um = ['name', 'password', 'email', 'enabled']
-        pm = ['description', 'project_name']
-
-        umod = {'user':{}}
-        pmod = {'project':{}}
-
         db = self.db
         u  = self.get_user(id)
 
         user = User()
         user.load(u)
 
-        umod['user']['id'] = user.user_id
-        pmod['project']['id'] = user.project_id
+        dict['project_id'] = user.project_id
+        dict['user_id']    = user.user_id
 
         if 'name' in dict:
             user.name = dict['name']
@@ -234,16 +228,7 @@ class Wrapper:
                 user.enabled = dict[key]
             user.history.register()
 
-        for key in dict:
-            if key in um:
-                umod['user'][key] = dict[key]
-            elif key in pm:
-                pmod['project'][key] = dict[key]
-
-        ju = json.dumps(umod)
-        jp = json.dumps(pmod)
-
-        self.os.update_user(umod, pmod)
+        self.os.update_user(dict)
         self.db.update(user)
 
     def retrieve_user(self, email):
