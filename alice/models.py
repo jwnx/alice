@@ -217,15 +217,15 @@ class Wrapper:
             user.email = dict['email']
 
         if 'enabled' in dict:
-            if (isinstance(dict[key], unicode)):
+            if (isinstance(dict['enabled'], unicode)):
                 try:
-                    v = ast.literal_eval(dict[key].title())
-                    setattr(user, key, v)
-                    dict[key] = v
+                    v = ast.literal_eval(dict['enabled'].title())
+                    setattr(user, 'enabled', v)
+                    dict['enabled'] = v
                 except:
                     sys.exit(0)
             else:
-                user.enabled = dict[key]
+                user.enabled = dict['enabled']
             user.history.register()
 
         self.os.update_user(dict)
