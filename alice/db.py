@@ -29,7 +29,6 @@ class DBManager():
                                         email=user.email,
                                         user_id=user.user_id,
                                         created_at=user.created_at,
-                                        project_name=user.project_name,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
                                         history=user.history.json(),

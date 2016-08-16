@@ -35,6 +35,7 @@ class User:
     enabled      = True
     created_at   = None
     description  = None
+    project_description = None
 
     history = None
 
@@ -206,7 +207,14 @@ class Wrapper:
 
         self.user.load(load)
 
+        u = self.os.get_user(self.user)
+        p = self.os.get_project(self.user)
+
         new_user = copy.deepcopy(self.user)
+
+        new_user.description = u.description
+        new_user.project_name = p.name
+        new_user.project_description = p.description
 
         for key in dict:
             setattr(new_user, key, dict[key])
