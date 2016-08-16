@@ -202,8 +202,8 @@ class Wrapper:
         um = ['name', 'password', 'email', 'enabled']
         pm = ['description', 'project_name']
 
-        umod = {}
-        pmod = {}
+        umod = {'user':{}}
+        pmod = {'project':{}}
 
         db = self.db
         u  = self.get_user(id)
@@ -211,8 +211,8 @@ class Wrapper:
         user = User()
         user.load(u)
 
-        umod['user_id'] = user.user_id
-        pmod['project_id'] = user.project_id
+        umod['user']['user_id'] = user.user_id
+        pmod['project']['project_id'] = user.project_id
 
         if 'name' in dict:
             user.name = dict['name']
@@ -234,9 +234,9 @@ class Wrapper:
 
         for key in dict:
             if key in um:
-                umod[key] = dict[key]
+                umod['user'][key] = dict[key]
             elif key in pm:
-                pmod[key] = dict[key]
+                pmod['project'][key] = dict[key]
 
         self.os.update_user(umod, pmod)
         self.db.update(user)
