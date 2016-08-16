@@ -89,7 +89,6 @@ class View:
 
         self.info('Username:       %s' % user.name)
         self.info('Email:          %s' % user.email)
-        self.info('Description:    %s' % p.description)
         self.info('Project Name:   %s' % p.name)
         self.info('P Description:  %s' % p.description)
         self.info('Enabled:        %s' % self.enabled(user))

@@ -31,8 +31,7 @@ class DBManager():
                                         created_at=user.created_at,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
-                                        history=user.history.json(),
-                                        description=user.description))
+                                        history=user.history.json()))
             self.db.commit()
         except:
             self.db.rollback()
@@ -47,10 +46,8 @@ class DBManager():
             self.db['user'].update(dict(id=user.id,
                                         name=user.name,
                                         email=user.email,
-                                        created_at=user.created_at,
                                         enabled=user.enabled,
-                                        history=user.history.json(),
-                                        description=user.description), ['id'])
+                                        history=user.history.json()), ['id'])
             self.db.commit()
         except:
             self.db.rollback()

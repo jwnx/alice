@@ -35,7 +35,6 @@ class User:
     enabled      = True
     created_at   = None
     description  = None
-    project_description = None
 
     history = None
 
@@ -200,36 +199,44 @@ class Wrapper:
 
     def update_user(self, id, dict):
 
-        new_user = User()
+        um = ['name', 'password', 'email', 'enabled']
+        pm = ['description', 'project_name']
+
+        umod = {}
+        pmod = {}
 
         db = self.db
-        load = self.get_user(id)
+        u  = self.get_user(id)
 
-        self.user.load(load)
+        user = User()
+        user.loads(u)
 
-        u = self.os.get_user(self.user)
-        p = self.os.get_project(self.user)
+        if 'name' in dict:
+            user.name = dict['name']
 
-        new_user = copy.deepcopy(self.user)
+        if 'email' in dict:
+            user.email = dict['email']
 
-        new_user.description = u.description
-        new_user.project_name = p.name
-        new_user.project_description = p.description
+        if 'enabled' in dict:
+            if (isinstance(dict[key], unicode)):
+                try:
+                    v = ast.literal_eval(dict[key].title())
+                    setattr(user, key, v)
+                    dict[key] = v
+                except:
+                    sys.exit(0)
+            else:
+                user.enabled = dict[key]
+            user.history.register()
 
         for key in dict:
-            setattr(new_user, key, dict[key])
-            if key == 'enabled':
-                if (isinstance(dict[key], unicode)):
-                    try:
-                        v = ast.literal_eval(dict[key].title())
-                        setattr(new_user, key, v)
-                    except:
-                        sys.exit(0)
+            if key in um:
+                umod[key] = dict[key]
+            elif key in pm:
+                pmod[key] = dict[key]
 
-                new_user.history.register()
-
-        self.os.update_user(new_user)
-        self.db.update(new_user)
+        self.os.update_user(user, umod, pmod)
+        self.db.update(user)
 
     def retrieve_user(self, email):
         db = self.db
