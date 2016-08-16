@@ -99,3 +99,5 @@ class View:
             self.info('Active for %d days ' % user.history.activity())
         else:
             self.info('Deactivated for %d days' % user.history.activity())
+
+        print('')
