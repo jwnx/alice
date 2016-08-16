@@ -164,7 +164,7 @@ class OpenstackBridge:
                                         'security_group_id': sc_grp}})
 
 
-    def update_user(self, user, u, p):
+    def update_user(self, u, p):
         keystone = self.keystone_auth()
         keystone.users.update(u)
         keystone.projects.update(p)
