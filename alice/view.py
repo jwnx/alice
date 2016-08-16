@@ -87,13 +87,11 @@ class View:
     def show_project(self, user, p):
         print('')
 
-        self.info('Username:   %s' % user.name)
-        self.info('Email:      %s' % user.email)
-        self.info('Enabled:    %s' % self.enabled(user))
-        print('')
+        self.info('Username:       %s' % user.name)
+        self.info('Email:          %s' % user.email)
         self.info('Project Name:   %s' % p.name)
-        self.info('Description:    %s' % p.email)
-        self.info('Enabled:        %s' % self.enabled(p))
+        self.info('Description:    %s' % p.description)
+        self.info('Enabled:        %s' % self.enabled(user))
 
         print('')
 

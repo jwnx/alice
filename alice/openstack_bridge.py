@@ -169,8 +169,11 @@ class OpenstackBridge:
         keystone.users.update(user.user_id, name=user.name,
                            password=user.password,
                            email=user.email,
-                           description=user.description,
                            enabled=user.enabled)
+        keystone.projects.update(user.project_id,
+                                    description = user.description,
+                                    name = user.project_name,
+                                    enabled = user.enabled)
 
     def get_user(self, user):
         keystone = self.keystone_auth()
