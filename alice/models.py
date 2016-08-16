@@ -211,6 +211,9 @@ class Wrapper:
         user = User()
         user.load(u)
 
+        umod['user_id'] = user.user_id
+        pmod['project_id'] = user.project_id
+
         if 'name' in dict:
             user.name = dict['name']
 
@@ -235,7 +238,7 @@ class Wrapper:
             elif key in pm:
                 pmod[key] = dict[key]
 
-        self.os.update_user(user, umod, pmod)
+        self.os.update_user(umod, pmod)
         self.db.update(user)
 
     def retrieve_user(self, email):

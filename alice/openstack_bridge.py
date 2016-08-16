@@ -166,8 +166,8 @@ class OpenstackBridge:
 
     def update_user(self, user, u, p):
         keystone = self.keystone_auth()
-        keystone.users.update(user.user_id, u)
-        keystone.projects.update(user.project_id, p)
+        keystone.users.update(u)
+        keystone.projects.update(p)
 
     def get_user(self, user):
         keystone = self.keystone_auth()
