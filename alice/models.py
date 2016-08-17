@@ -37,6 +37,7 @@ class User:
     enabled      = True
     created_at   = None
     description  = None
+    expiration   = None
 
     history = None
 
@@ -52,6 +53,7 @@ class User:
         self.email   = dict['email']
         self.user_id = dict['user_id']
         self.enabled = dict['enabled']
+        self.expiration = dict['expiration']
         self.project_id = dict['project_id']
         self.created_at = timestring.Date(dict['created_at'])
         self.history    = History(self, dict['history'])
@@ -133,10 +135,11 @@ class Wrapper:
         self.view  = View(self)
         self.db    = self.os.db
 
-    def generate_user(self, name, email, enabled):
+    def generate_user(self, name, email, enabled, expire):
         self.user.name = name
         self.user.email = email
         self.user.enabled = enabled
+        print (timestring.Date("today") + expire)
 
         project_name = (self.user.name).title() + "'s project"
         password     = self.generate_password()
@@ -144,12 +147,12 @@ class Wrapper:
         self.user.project_name = project_name
         self.user.password = password
 
-    def verify(self, name, email, enabled):
-        self.generate_user(name, email, enabled)
+    def verify(self, name, email, enabled, expire):
+        self.generate_user(name, email, enabled, expire)
         self.confirmation()
 
-    def automatic(self, name, email, enabled):
-        self.generate_user(name, email, enabled)
+    def automatic(self, name, email, enabled, expire):
+        self.generate_user(name, email, enabled, expire)
         self.view.show_keystone_full()
         self.create_user()
 
@@ -188,14 +191,16 @@ class Wrapper:
         warnings.filterwarnings("ignore")
 
         self.view.info(3)
-        self.os.register_user(self.user)
+        # self.os.register_user(self.user)
         self.view.info(4)
-        self.os.create_network(self.user)
+        # self.os.create_network(self.user)
         self.user.history.register()
         self.add_user()
 
-        if (self.user.enabled is False):
-            self.os.update_user(self.user.user_id, self.user)
+        # if (self.user.enabled is False):
+        #     self.os.update_user({'user_id':self.user.user_id,
+        #                          'project_id': self.user.project_id,
+        #                          'enabled':False })
 
         self.view.notify(5)
 

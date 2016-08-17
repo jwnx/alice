@@ -27,11 +27,13 @@ def cli():
               help='Adds user automatically', is_flag=True)
 @click.option('--enabled/--disabled', default=True,
               help='Enables or disables an user account', is_flag=True)
-def add(name, email, auto, enabled):
+@click.option('--expire', default='30',
+              help='Set the amount of days until this account expires')
+def add(name, email, auto, enabled, expire):
     if auto is False:
-        w.verify(name, email, enabled)
+        w.verify(name, email, enabled, expire)
     else:
-        w.automatic(name, email, enabled)
+        w.automatic(name, email, enabled, expire)
 
 
 @cli.command()
