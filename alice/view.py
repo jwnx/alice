@@ -99,21 +99,21 @@ class View:
         self.persistent("Password:       %s" % self.user.password)
         self.persistent("Enabled:        %s" % self.enabled())
 
-    def show_project(self, user):
+    def show_project(self, user, p):
         print('')
 
         self.info('Username:       %s' % user.name)
         self.info('Email:          %s' % user.email)
-        # self.info('Project Name:   %s' % p.name)
-        # self.info('P Description:  %s' % p.description)
+        self.info('Project Name:   %s' % p.name)
+        self.info('P Description:  %s' % p.description)
         self.info('Enabled:        %s' % self.enabled(user))
-        self.info('Expires at:     %s' % user.expiration)
+        self.info('Expires at:     %s' % user.expiration.format("%d %b %Y"))
 
         print('')
 
         if user.enabled is True:
-            self.info('Active for %d days ' % user.history.activity())
+            self.info('Active for %s ' % user.history.activity())
         else:
-            self.info('Deactivated for %d days' % user.history.activity())
+            self.info('Deactivated for %s' % user.history.activity())
 
         print('')

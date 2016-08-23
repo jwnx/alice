@@ -53,7 +53,7 @@ class User:
         self.email   = dict['email']
         self.user_id = dict['user_id']
         self.enabled = dict['enabled']
-        self.expiration = dict['expiration']
+        self.expiration = timestring.Date(dict['expiration'])
         self.project_id = dict['project_id']
         self.created_at = timestring.Date(dict['created_at'])
         self.history    = History(self, dict['history'])
@@ -94,7 +94,7 @@ class History:
     # Calcula o numero de dias ativo ou inativo
     def activity(self):
         r = timestring.Range(self.last_seen(), timestring.Date("now"))
-        return int(len(r)/86400)
+        return r.elapse[:r.elapse.find("hour")+5]
 
 
     # Parse a lista de datas apos acessar o banco de dados
@@ -230,16 +230,16 @@ class Wrapper:
         warnings.filterwarnings("ignore")
 
         self.view.info(3)
-        # self.os.register_user(self.user)
+        self.os.register_user(self.user)
         self.view.info(4)
-        # self.os.create_network(self.user)
+        self.os.create_network(self.user)
         self.user.history.register()
         self.add_user()
 
-        # if (self.user.enabled is False):
-        #     self.os.update_user({'user_id':self.user.user_id,
-        #                          'project_id': self.user.project_id,
-        #                          'enabled':False })
+        if (self.user.enabled is False):
+            self.os.update_user({'user_id':self.user.user_id,
+                                 'project_id': self.user.project_id,
+                                 'enabled':False })
 
         self.view.notify(5)
 
@@ -280,16 +280,16 @@ class Wrapper:
                 print " . user %s is not enabled." % (user.name)
                 return
 
-        # self.os.update_user(dict)
+        self.os.update_user(dict)
         self.db.update(user)
 
     def retrieve_user(self, email):
         db = self.db
         load = self.get_user(email)
         self.user.load(load)
-        # p = self.os.get_project(self.user)
-        # self.view.show_project(self.user, p)
-        self.view.show_project(self.user)
+        p = self.os.get_project(self.user)
+        self.view.show_project(self.user, p)
+        # self.view.show_project(self.user)
 
     def confirmation(self):
         add = ''

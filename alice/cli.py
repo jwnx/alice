@@ -43,10 +43,14 @@ def add(name, email, auto, enabled, expire):
 def list(highlight, filter):
     '''Lists registered users.
 
-     Filters: {enabled, disabled, hold, expired}
+     Filters: {enabled, disabled, active, hold, expired}
 
     '''
-    w.list(highlight, filter)
+
+    if (filter not in ['enabled', 'disabled', 'hold', 'expired', 'active', None]):
+        print("\n Unknown option %s." % filter)
+    else:
+        w.list(highlight, filter)
 
 @cli.command()
 @click.argument('id', nargs=1, type=click.STRING)
