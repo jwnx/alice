@@ -75,6 +75,7 @@ class History:
             self.enabled.append(str(timestring.Date('now')))
         else:
             self.disabled.append(str(timestring.Date('now')))
+            self.user.expiration = None
 
 
     # Retorna o ultimo registro feito no historico do usuario
@@ -83,6 +84,12 @@ class History:
             return timestring.Date(self.enabled[-1])
         return timestring.Date(self.disabled[-1])
 
+
+    def time_left(self):
+        if (self.user.enabled is True):
+            # e = timestring.Date(self.user.expiration)
+            tl = timestring.Range("now", self.user.expiration)
+            return tl
 
     # Calcula o numero de dias ativo ou inativo
     def activity(self):
@@ -121,6 +128,34 @@ class History:
             self.disabled = []
 
 
+class DateParser(object):
+
+    range = None
+
+    def __init__(self, obj):
+        self.range = obj
+
+    def plural(self, int):
+        if int > 1:
+            return "s"
+        else:
+            return ""
+
+
+    @property
+    def state(self):
+        if '-' in self.range.elapse:
+            if len(self.range) >= 604800:
+                return 'expired'
+            else:
+                return 'hold'
+        return 'active'
+
+    @property
+    def elapsed(self):
+        # NOT YET IMPLEMENTED
+        return
+
 
 class Wrapper:
 
@@ -139,7 +174,11 @@ class Wrapper:
         self.user.name = name
         self.user.email = email
         self.user.enabled = enabled
-        print (timestring.Date("today") + expire)
+
+        if (self.represent_int(expire)):
+            expire = str(expire) + "d"
+
+        self.user.expiration = (timestring.Range("next " + expire)).end
 
         project_name = (self.user.name).title() + "'s project"
         password     = self.generate_password()
@@ -233,15 +272,24 @@ class Wrapper:
                 user.enabled = dict['enabled']
             user.history.register()
 
-        self.os.update_user(dict)
+        if 'expiration' in dict:
+            if user.enabled:
+                exp = timestring.Date(user.expiration) + str(dict['expiration'])
+                user.expiration = exp
+            else:
+                print " . user %s is not enabled." % (user.name)
+                return
+
+        # self.os.update_user(dict)
         self.db.update(user)
 
     def retrieve_user(self, email):
         db = self.db
         load = self.get_user(email)
         self.user.load(load)
-        p = self.os.get_project(self.user)
-        self.view.show_project(self.user, p)
+        # p = self.os.get_project(self.user)
+        # self.view.show_project(self.user, p)
+        self.view.show_project(self.user)
 
     def confirmation(self):
         add = ''
@@ -257,41 +305,69 @@ class Wrapper:
                 self.view.error(2)
                 sys.exit()
 
-    def list(self, enabled, disabled):
+    def list(self, highlight, filter):
 
         status = ''
         db     = self.db
         fetch  = None
 
-        if (enabled != disabled):
-            fetch = db.find_enabled(enabled)
+        if filter is not None and filter != "disabled":
+            fetch = db.find_enabled(True)
+        elif (filter == "disabled"):
+            fetch = db.find_enabled(False)
         else:
             fetch  = db.select_all()
 
-        t      = PrettyTable(['ID', 'Name', 'Email', 'Status'])
+        t      = PrettyTable(['ID', 'Name', 'Email', 'Status', 'Expires in'])
         status = None
 
         t.borders = False
         t.vrules  = 2
 
         for row in fetch:
+
             u = User()
             u.load(row)
 
+
+            if u.expiration is None and u.enabled is True:
+                exp = u.history.last_seen() + "30d"
+                self.db.add_expiration(u.id, exp)
+                u.expiration = exp
+
             if u.enabled is True:
-                status = self.view.blue('Enabled')
-                t.add_row([u.id,
-                          u.name,
-                          u.email,
-                          status + ' for ' +
-                          str(u.history.activity()) + ' days'])
+
+                elapsed = (u.history.time_left()).elapse
+                elapsed = elapsed[:elapsed.index("hour") + 5]
+                state = DateParser(u.history.time_left()).state
+
+                v = [u.id, u.name, u.email, state.title(), elapsed]
+
+                if highlight is True:
+                    if state == 'expired':
+                        v[0] = self.view.RED(v[0])
+                        v[-1] = self.view.RED(v[-1]) + self.view.NORMAL()
+                    if state == 'hold':
+                        v[0] = self.view.YELLOW(v[0])
+                        v[-1] = self.view.YELLOW(v[-1]) + self.view.NORMAL()
+                else:
+                    if state == 'expired':
+                        for i in range(0, len(v)):
+                            v[i] = self.view.red(v[i])
+                    if state == 'hold':
+                        for i in range(0, len(v)):
+                            v[i] = self.view.yellow(v[i])
+
+                if str(filter) == state or filter is None or filter == "enabled":
+                    t.add_row(v)
+
             else:
                 status = 'Disabled'
                 t.add_row([self.view.dim(u.id),
                           self.view.dim(u.name),
                           self.view.dim(u.email),
-                          self.view.dim(status + ' for ' +
-                          str(u.history.activity()) + ' days')])
+                          self.view.dim(status),
+                          self.view.dim("---")])
 
 
         print t

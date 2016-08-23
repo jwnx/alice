@@ -37,12 +37,16 @@ def add(name, email, auto, enabled, expire):
 
 
 @cli.command()
-@click.option('--enabled', default=False,
-              help='Filters active users', is_flag=True)
-@click.option('--disabled', default=False,
-              help='Filters disabled users', is_flag=True)
-def list(enabled, disabled):
-    w.list(enabled, disabled)
+@click.option('--highlight', default=False,
+              help='Highlight users states', is_flag=True)
+@click.argument('filter', type=click.STRING, required=False)
+def list(highlight, filter):
+    '''Lists registered users.
+
+     Filters: {enabled, disabled, hold, expired}
+
+    '''
+    w.list(highlight, filter)
 
 @cli.command()
 @click.argument('id', nargs=1, type=click.STRING)

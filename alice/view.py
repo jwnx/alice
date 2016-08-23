@@ -39,6 +39,21 @@ class View:
     def magenta(self, char):
         return Fore.MAGENTA + str(char) + Style.RESET_ALL
 
+    def yellow(self, char):
+        return Fore.YELLOW + str(char) + Style.RESET_ALL
+
+    def red(self, char):
+        return Fore.RED + str(char) + Style.RESET_ALL
+
+    def YELLOW(self, char):
+        return Back.YELLOW + Fore.BLACK + str(char)
+
+    def RED(self, char):
+        return Back.RED + Fore.BLACK + str(char)
+
+    def NORMAL(self):
+        return Style.RESET_ALL
+
     def dim(self, char):
         return Fore.LIGHTBLACK_EX + str(char) + Style.RESET_ALL
 
@@ -84,14 +99,15 @@ class View:
         self.persistent("Password:       %s" % self.user.password)
         self.persistent("Enabled:        %s" % self.enabled())
 
-    def show_project(self, user, p):
+    def show_project(self, user):
         print('')
 
         self.info('Username:       %s' % user.name)
         self.info('Email:          %s' % user.email)
-        self.info('Project Name:   %s' % p.name)
-        self.info('P Description:  %s' % p.description)
+        # self.info('Project Name:   %s' % p.name)
+        # self.info('P Description:  %s' % p.description)
         self.info('Enabled:        %s' % self.enabled(user))
+        self.info('Expires at:     %s' % user.expiration)
 
         print('')
 

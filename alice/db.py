@@ -31,6 +31,7 @@ class DBManager():
                                         created_at=user.created_at,
                                         project_id=user.project_id,
                                         enabled=user.enabled,
+                                        expiration=user.expiration,
                                         history=user.history.json()))
             self.db.commit()
         except:
@@ -47,6 +48,7 @@ class DBManager():
                                         name=user.name,
                                         email=user.email,
                                         enabled=user.enabled,
+                                        expiration=user.expiration,
                                         history=user.history.json()), ['id'])
             self.db.commit()
         except:
@@ -60,3 +62,13 @@ class DBManager():
 
     def select_by_id(self, id):
         return self.db['user'].find_one(id=id)
+
+    def add_expiration(self, id, expiration):
+        self.db.begin()
+
+        try:
+            self.db['user'].update(dict(id=id,
+                                        expiration=expiration), ['id'])
+            self.db.commit()
+        except:
+            self.db.rollback()
