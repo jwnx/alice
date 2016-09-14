@@ -71,9 +71,15 @@ def modify(id, attributes):
     w.update_user(id, dict)
 
 
-@cli.command()
+# @cli.command()
 def drop():
     w.db.drop()
+
+
+@cli.command()
+def migrate():
+    w.migration()
+
 
 def main():
     cli()
