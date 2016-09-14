@@ -188,3 +188,8 @@ class OpenstackBridge:
     def get_project(self, user):
         keystone = self.keystone_auth()
         return keystone.projects.get(user.project_id)
+
+
+    def get_all_users(self):
+        keystone = self.keystone_auth()
+        return keystone.users['users']

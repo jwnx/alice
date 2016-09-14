@@ -220,6 +220,15 @@ class Wrapper:
             load = db.select_by_name(obj)
         return load
 
+    def migration(self):
+        db = self.db
+
+        all_users = self.os.get_all_users()
+
+        for user in all_users:
+            print user
+
+
 
     def add_user(self):
         db = self.db
