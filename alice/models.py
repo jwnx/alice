@@ -220,7 +220,7 @@ class Wrapper:
             load = db.select_by_name(obj)
         return load
 
-    def migration(self):
+    def migrate(self):
         db = self.db
 
         all_users = self.os.get_all_users()
@@ -229,18 +229,23 @@ class Wrapper:
 
         for user in all_users.list():
             if user.name not in services:
-                print user.email
+                try:
+                    found = db.select_by_email(user.email)
 
+                    if found is None:
+                        u = User()
 
+                        u.user_id = user.id
+                        u.project_id = user.default_project_id
+                        u.email = user.email
+                        u.enabled = user.enabled
+                        u.name = user.name
+                        u.expiration = (timestring.Range("next 30d")).end
+                        u.history.register()
 
-            # u = User()
-            # u.user_id = user.id
-            # u.project_id = user.default_project_id
-            # u.email = user.email
-            # u.enabled = user.enabled
-            # u.name = user.name
-
-
+                        db.insert_record(u)
+                except:
+                    continue
 
 
     def add_user(self):
@@ -369,7 +374,7 @@ class Wrapper:
                     elapsed = elapsed[:elapsed.index("hour") + 5]
                 except:
                     elapsed = elapsed[:elapsed.index("min") + 7]
-                    
+
                 state = DateParser(u.history.time_left()).state
 
                 v = [u.id, u.name, u.email, state.title(), elapsed]
