@@ -365,7 +365,11 @@ class Wrapper:
             if u.enabled is True:
 
                 elapsed = (u.history.time_left()).elapse
-                elapsed = elapsed[:elapsed.index("hour") + 5]
+                try:
+                    elapsed = elapsed[:elapsed.index("hour") + 5]
+                except:
+                    elapsed = elapsed[:elapsed.index("min") + 7]
+                    
                 state = DateParser(u.history.time_left()).state
 
                 v = [u.id, u.name, u.email, state.title(), elapsed]
