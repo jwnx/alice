@@ -88,16 +88,16 @@ class View:
         raw = raw_input('\n' + Fore.BLACK + " : " + Style.RESET_ALL + MSG[2])
         return raw
 
-    def show_keystone_basic(self):
+    def show_basic_info(self, user):
         print('')
-        self.message("Username:       %s" % self.user.name)
-        self.message("Email:          %s" % self.user.email)
+        self.message("Username:       %s" % user.name)
+        self.message("Email:          %s" % user.email)
 
-    def show_keystone_full(self):
-        self.show_keystone_basic()
-        self.persistent("Project Name:   %s" % self.user.project_name)
-        self.persistent("Password:       %s" % self.user.password)
-        self.persistent("Enabled:        %s" % self.enabled())
+    def show_full_info(self, user):
+        self.show_basic_info(user)
+        self.persistent("Project Name:   %s" % user.project_name)
+        self.persistent("Password:       %s" % user.password)
+        self.persistent("Enabled:        %s" % self.enabled(user))
 
     def show_project(self, user, p):
         print('')

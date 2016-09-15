@@ -11,7 +11,7 @@ import getopt
 
 from datetime import date, datetime
 
-from models import Wrapper
+from models.wrapper import Wrapper
 
 w = Wrapper()
 
@@ -20,21 +20,17 @@ w = Wrapper()
 def cli():
     pass
 
+
 @cli.command()
 @click.argument('name', nargs=1, type=click.STRING)
 @click.argument('email', nargs=1, type=click.STRING)
-@click.option('--auto', default=False,
-              help='Adds user automatically', is_flag=True)
 @click.option('--enabled/--disabled', default=True,
               help='Enables or disables an user account', is_flag=True)
 @click.option('--expire', default='30',
               help='Set the amount of days until this account expires')
-def add(name, email, auto, enabled, expire):
-    if auto is False:
-        w.verify(name, email, enabled, expire)
-    else:
-        w.automatic(name, email, enabled, expire)
-
+@click.option('--yes', is_flag=True, default=False)
+def add(name, email, enabled, expire, yes):
+    w.add(name, email, enabled, expire, yes)
 
 @cli.command()
 @click.option('--highlight', default=False,
