@@ -78,7 +78,7 @@ def drop():
 
 @cli.command()
 def migrate():
-    w.migration()
+    w.migrate()
 
 
 def main():
