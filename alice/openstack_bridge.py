@@ -192,4 +192,4 @@ class OpenstackBridge:
 
     def get_all_users(self):
         keystone = self.keystone_auth()
-        return keystone.users['users']
+        return keystone.users

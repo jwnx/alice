@@ -224,9 +224,7 @@ class Wrapper:
         db = self.db
 
         all_users = self.os.get_all_users()
-
-        for user in all_users:
-            print user
+        print all_users
 
 
 
