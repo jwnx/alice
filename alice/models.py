@@ -224,7 +224,22 @@ class Wrapper:
         db = self.db
 
         all_users = self.os.get_all_users()
-        print all_users
+
+        services = ['ceilometer', 'nova', 'neutron', 'glance', 'keystone', 'admin']
+
+        for user in all_users.list():
+            if user.name not in services:
+                print user.email
+
+
+
+            # u = User()
+            # u.user_id = user.id
+            # u.project_id = user.default_project_id
+            # u.email = user.email
+            # u.enabled = user.enabled
+            # u.name = user.name
+
 
 
 
@@ -293,10 +308,15 @@ class Wrapper:
     def retrieve_user(self, email):
         db = self.db
         load = self.get_user(email)
-        self.user.load(load)
-        p = self.os.get_project(self.user)
-        self.view.show_project(self.user, p)
-        # self.view.show_project(self.user)
+
+        if load is None:
+            print "No user found"
+            sys.exit()
+        else:
+            self.user.load(load)
+            p = self.os.get_project(self.user)
+            self.view.show_project(self.user, p)
+            # self.view.show_project(self.user)
 
     def confirmation(self):
         add = ''
