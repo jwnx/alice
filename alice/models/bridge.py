@@ -1,12 +1,12 @@
-from neutronclient.v2_0 import client as nclient
-from novaclient import client as vclient
-from keystoneauth1 import loading
+from neutronclient.v2_0     import client as nclient
+from novaclient             import client as vclient
+from keystoneauth1          import loading
 from keystoneauth1.identity import v3
-from keystoneauth1 import session
-from keystoneclient.v3 import client
-
-import config as var
+from keystoneauth1          import session
+from keystoneclient.v3      import client
 from os import environ as env
+
+import alice.config as var
 import sys
 import os
 

@@ -1,16 +1,3 @@
-postgresql     = {'user'            : '',
-                  'password'        : '' }
-
-
-user           = {'username'        : None,
-                  'email'           : None,
-                  'enabled'         : True,
-                  'domain'          : 'default',
-                  'project_name'    : 'project',
-                  'password'        : 'pass',
-                  'ext_net'         : '',
-                  'user_id'         : ''}
-
 network         = {'name'           : "Intranet",
                    'admin_state_up' : True,
                    'tenant_id'      : ''
