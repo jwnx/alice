@@ -3,7 +3,7 @@ from colorama import Fore, Back, Style, init
 from pathlib import Path
 import readline, glob
 
-from variables import *
+from alice.config import *
 
 
 DOT  = ' . '
@@ -23,14 +23,8 @@ MSG   = ["Wrong input",
 
 class View:
 
-    c = None
-    user = None
-
-    def __init__(self, wrapper):
-        self.c    = wrapper.os
-        self.user = wrapper.user
+    def __init__(self):
         init(autoreset=True)
-
 
     # Usado em LIST
     def blue(self, char):
@@ -76,10 +70,7 @@ class View:
         except TypeError:
             print(Fore.BLACK + DOT + Style.RESET_ALL + intg)
 
-    def enabled(self, user = None):
-        if (user is None):
-            user = self.user
-
+    def enabled(self, user):
         if (user.enabled):
             return (Fore.GREEN + "\033[1mTrue" + Style.RESET_ALL)
         return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)

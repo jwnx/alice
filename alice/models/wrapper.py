@@ -1,28 +1,17 @@
-from history import History
-from user    import User
-from dateparser import DateParser
-
-
-from xkcdpass import xkcd_password as xp
-from pathlib import Path
+from history     import History
+from user        import User
+from bridge      import OpenstackBridge
+from db          import DBManager
+from dateparser  import DateParser
+from alice.view  import View
+from xkcdpass    import xkcd_password as xp
 from prettytable import PrettyTable
-from collections import namedtuple
+
 import timestring
 import warnings
-import os
-import copy
 import sys
-import getopt
 import json
-import click
-from alice.openstack_bridge import OpenstackBridge
-from alice.view import View
 import ast
-
-yes  = set(['yes', 'y', 'ye'])
-no   = set(['no', 'n'])
-edit = set(['e', 'edit'])
-ARW  = ' >'
 
 
 class Wrapper:
@@ -30,13 +19,11 @@ class Wrapper:
     os   = None
     view = None
     db   = None
-    user = None
 
     def __init__(self):
         self.os    = OpenstackBridge()
-        self.user  = User()
-        self.view  = View(self)
-        self.db    = self.os.db
+        self.view  = View()
+        self.db    = DBManager()
 
 
     def generate_user_data(self, name, email, enabled, expire):
@@ -59,7 +46,7 @@ class Wrapper:
         user.password = password
 
         return user
-        
+
 
     def add(self, name, email, enabled, expire, yes):
         user = self.generate_user_data(name, email, enabled, expire)
@@ -69,12 +56,14 @@ class Wrapper:
             self.confirmation()
         self.create_user(user)
 
+
     def represent_int(self, obj):
         try:
             int(obj)
             return True
         except ValueError:
             return False
+
 
     def generate_password(self):
         wordfile = xp.locate_wordfile()
@@ -83,6 +72,7 @@ class Wrapper:
         return new_pass
 
 
+    # Get user by name, email or ID.
     def get_user(self, obj):
         db = self.db
         load = None
@@ -94,14 +84,15 @@ class Wrapper:
             load = db.select_by_name(obj)
         return load
 
+
     def migrate(self):
         db = self.db
 
-        all_users = self.os.get_all_users()
+        all_users = self.os.get_user()
 
         services = ['ceilometer', 'nova', 'neutron', 'glance', 'keystone', 'admin']
 
-        for user in all_users.list():
+        for user in all_users:
             if user.name not in services:
                 try:
                     found = db.select_by_email(user.email)
@@ -150,6 +141,7 @@ class Wrapper:
         u  = self.get_user(id)
 
         user = User()
+
         user.load(u)
 
         dict['project_id'] = user.project_id
@@ -184,20 +176,27 @@ class Wrapper:
         # self.os.update_user(dict)
         self.db.update(user)
 
-    def retrieve_user(self, email):
+    def retrieve_user(self, id):
+
         db = self.db
-        load = self.get_user(email)
+        u  = User()
+
+        load = self.get_user(id)
 
         if load is None:
             print "No user found"
             sys.exit()
         else:
-            self.user.load(load)
-            # p = self.os.get_project(self.user)
-            self.view.show_project(self.user, p)
-            # self.view.show_project(self.user)
+            u.load(load)
+            # p = self.os.get_project(u)
+            self.view.show_project(u, p)
+            # self.view.show_project(u)
 
     def confirmation(self):
+
+        yes  = set(['yes', 'y', 'ye'])
+        no   = set(['no', 'n'])
+
         add = ''
         while (add not in yes) and (add not in no):
             add = self.view.question()
@@ -205,17 +204,17 @@ class Wrapper:
                 self.view.error(1)
                 sys.exit()
             if add in yes:
-                return true
+                break
             else:
                 self.view.error(2)
                 sys.exit()
 
     def list(self, highlight, filter):
 
-        status = ''
         db     = self.db
         fetch  = None
 
+        # List filter select
         if filter is not None and filter != "disabled":
             fetch = db.find_enabled(True)
         elif (filter == "disabled"):
@@ -223,8 +222,7 @@ class Wrapper:
         else:
             fetch  = db.select_all()
 
-        t      = PrettyTable(['ID', 'Name', 'Email', 'Status', 'Expires in'])
-        status = None
+        t = PrettyTable(['ID', 'Name', 'Email', 'Status', 'Expires in'])
 
         t.borders = False
         t.vrules  = 2
@@ -234,7 +232,6 @@ class Wrapper:
             u = User()
             u.load(row)
 
-
             if u.expiration is None and u.enabled is True:
                 exp = u.history.last_seen() + "30d"
                 self.db.add_expiration(u.id, exp)
@@ -243,15 +240,19 @@ class Wrapper:
             if u.enabled is True:
 
                 elapsed = (u.history.time_left()).elapse
+
+                # String too long
                 try:
                     elapsed = elapsed[:elapsed.index("hour") + 5]
                 except:
                     elapsed = elapsed[:elapsed.index("min") + 7]
 
+                # On hold, expired or active
                 state = DateParser(u.history.time_left()).state
 
                 v = [u.id, u.name, u.email, state.title(), elapsed]
 
+                # Enables highlight
                 if highlight is True:
                     if state == 'expired':
                         v[0] = self.view.RED(v[0])
@@ -271,11 +272,11 @@ class Wrapper:
                     t.add_row(v)
 
             else:
-                status = 'Disabled'
+                state = 'Disabled'
                 t.add_row([self.view.dim(u.id),
                           self.view.dim(u.name),
                           self.view.dim(u.email),
-                          self.view.dim(status),
+                          self.view.dim(state),
                           self.view.dim("---")])
 
 

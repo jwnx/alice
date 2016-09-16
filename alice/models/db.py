@@ -8,7 +8,7 @@ import sqlalchemy
 class DBManager():
 
     db = None
-    location = 'postgresql://alice@localhost:5432/alice'
+    # location = 'postgresql://alice@localhost:5432/alice'
 
     def __init__(self):
         self.connect()

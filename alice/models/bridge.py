@@ -5,23 +5,19 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneclient.v3 import client
 
-import variables as var
+import config as var
 from os import environ as env
-from view import View
 import sys
 import os
-import db
-
 
 
 class OpenstackBridge:
 
-    db      = None
     network = var.network
     subnet  = var.subnet
 
     def __init__(self):
-        self.db = db.DBManager()
+        pass
 
     # keystone_auth: Connects to keystone database and
     # returns an authenticated client object.
@@ -181,15 +177,13 @@ class OpenstackBridge:
             keystone.projects.update(d['project_id'], enabled=d['enabled'])
             keystone.users.update(d['user_id'], enabled=d['enabled'])
 
-    def get_user(self, user):
+    def get_user(self, user = None):
         keystone = self.keystone_auth()
+
+        if user is None:
+            return keystone.users.list()
         return keystone.users.get(user.user_id)
 
     def get_project(self, user):
         keystone = self.keystone_auth()
         return keystone.projects.get(user.project_id)
-
-
-    def get_all_users(self):
-        keystone = self.keystone_auth()
-        return keystone.users
