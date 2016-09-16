@@ -52,9 +52,6 @@ class Wrapper:
 
         load = self.get_user(email)
 
-        if load is not None:
-            sys.exit(0)
-
         user = self.generate_user_data(name, email, enabled, expire)
         self.view.show_full_info(user)
 
@@ -88,6 +85,9 @@ class Wrapper:
             load = db.select_by_email(obj)
         else:
             load = db.select_by_name(obj)
+
+        if load is None:
+            sys.exit(0)
         return load
 
     # Migrate all users from Openstack to alice's db, so they can be
@@ -174,7 +174,7 @@ class Wrapper:
 
         if 'expiration' in dict:
             if user.enabled:
-                exp = timestring.Date(user.expiration) + str(dict['expiration'])
+                exp = timestring.Date(dict['expiration'])
                 user.expiration = exp
             else:
                 print " . user %s is not enabled." % (user.name)

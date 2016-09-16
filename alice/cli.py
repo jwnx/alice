@@ -59,6 +59,21 @@ def show(id):
 @click.argument('attributes', nargs=-1)
 def modify(id, attributes):
 
+    """ This option modifies user attributes.
+
+    ID: alice's ID, user's name or email.
+
+    Valid attributes are: name, email, password,
+    project_name, description, enabled and expiration.
+
+
+    Example:
+
+    \b
+       alice modify 1 name:amanda enabled:false
+       alice modify amanda email:amanda@mail.com
+       alice modify amanda@mail.com expiration:'in 30d'"""
+
     dict = {}
     for att in attributes:
         key, value = att.split(":", 1)
