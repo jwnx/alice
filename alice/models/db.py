@@ -22,7 +22,7 @@ class DBManager():
     def find_enabled(self, enabled):
         return self.db['user'].find(enabled=enabled)
 
-    def insert_record(self, user):
+    def insert(self, user):
         self.db.begin()
         try:
             self.db['user'].insert(dict(name=user.name,

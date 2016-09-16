@@ -84,7 +84,8 @@ class Wrapper:
             load = db.select_by_name(obj)
         return load
 
-
+    # Migrate all users from Openstack to alice's db, so they can be
+    # managed by it's CLI.
     def migrate(self):
         db = self.db
 
@@ -108,14 +109,14 @@ class Wrapper:
                         u.expiration = (timestring.Range("next 30d")).end
                         u.history.register()
 
-                        db.insert_record(u)
+                        db.insert(u)
                 except:
                     continue
 
 
     def db_add_user(self, user):
         db = self.db
-        db.insert_record(user)
+        db.insert(user)
 
     def create_user(self, user):
         print
