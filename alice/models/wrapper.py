@@ -49,6 +49,12 @@ class Wrapper:
 
 
     def add(self, name, email, enabled, expire, yes):
+
+        load = self.get_user(email)
+
+        if load is not None:
+            sys.exit(0)
+
         user = self.generate_user_data(name, email, enabled, expire)
         self.view.show_full_info(user)
 
