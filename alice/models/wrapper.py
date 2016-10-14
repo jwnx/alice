@@ -50,7 +50,7 @@ class Wrapper:
 
     def add(self, name, email, enabled, expire, yes):
 
-        load = self.get_user(email)
+        load = self.get_user_data(email)
 
         user = self.generate_user_data(name, email, enabled, expire)
         self.view.show_full_info(user)
@@ -58,6 +58,15 @@ class Wrapper:
         if not yes:
             self.confirmation()
         self.create_user(user)
+
+
+    def delete(self, list):
+
+        for id in list:
+            u = self.get_user_data(id)
+            print u
+
+            # self.db.delete(u)
 
 
     def represent_int(self, obj):
@@ -75,20 +84,22 @@ class Wrapper:
         return new_pass
 
 
-    # Get user by name, email or ID.
-    def get_user(self, obj):
+    # Get user's data by name, email or ID.
+    def get_user_data(self, obj):
         db = self.db
-        load = None
-        if self.represent_int(obj):
-            load = db.select_by_id(obj)
-        elif obj.find('@') >= 0:
-            load = db.select_by_email(obj)
-        else:
-            load = db.select_by_name(obj)
+        data = None
 
-        if load is None:
+        if self.represent_int(obj):
+            data = db.select_by('id', obj)
+        elif obj.find('@') >= 0:
+            data = db.select_by('email', obj)
+        else:
+            data = db.select_by('name', obj)
+
+        if data is None:
             sys.exit(0)
-        return load
+
+        return data
 
     # Migrate all users from Openstack to alice's db, so they can be
     # managed by it's CLI.
@@ -145,7 +156,7 @@ class Wrapper:
     def update_user(self, id, dict):
 
         db = self.db
-        u  = self.get_user(id)
+        u  = self.get_user_data(id)
 
         user = User()
 
@@ -188,7 +199,7 @@ class Wrapper:
         db = self.db
         u  = User()
 
-        load = self.get_user(id)
+        load = self.get_user_data(id)
 
         if load is None:
             print "No user found"

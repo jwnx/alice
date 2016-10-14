@@ -53,6 +53,10 @@ def list(highlight, filter):
 def show(id):
     w.retrieve_user(id)
 
+@cli.command()
+@click.argument('id', nargs=-1, type=click.STRING)
+def delete(id):
+    w.delete(id)
 
 @cli.command()
 @click.argument('id', nargs=1, type=click.STRING)

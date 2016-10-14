@@ -54,14 +54,8 @@ class DBManager():
         except:
             self.db.rollback()
 
-    def select_by_email(self, content):
-        return self.db['user'].find_one(email=content)
-
-    def select_by_name(self, content):
-        return self.db['user'].find_one(name=content)
-
-    def select_by_id(self, id):
-        return self.db['user'].find_one(id=id)
+    def select_by(self, func, content):
+        return self.db['user'].find_one(**{ func : content })
 
     def add_expiration(self, id, expiration):
         self.db.begin()
@@ -72,3 +66,6 @@ class DBManager():
             self.db.commit()
         except:
             self.db.rollback()
+
+    def delete(self, user):
+        self.db['user'].delete(email=user.email)
