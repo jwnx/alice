@@ -84,7 +84,7 @@ def show_project(user, p):
     INFO('Email:          %s' % user.email)
     INFO('Project Name:   %s' % p.name)
     INFO('P Description:  %s' % p.description)
-    INFO('Enabled:        %s' % self.enabled(user))
+    INFO('Enabled:        %s' % ENABLED(user))
     INFO('Expires at:     %s' % user.expiration.format("%d %b %Y"))
     print('')
 

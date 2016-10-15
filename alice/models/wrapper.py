@@ -90,16 +90,16 @@ class Wrapper:
         warnings.filterwarnings("ignore")
 
         INFO(3)
-        # self.os.register_user(user)
+        self.os.register_user(user)
         INFO(4)
-        # self.os.create_network(user)
+        self.os.create_network(user)
         user.history.register()
         self.__db_add_user(user)
 
-        # if (user.enabled is False):
-        #     self.os.update_user({'user_id':user.user_id,
-        #                          'project_id': user.project_id,
-        #                          'enabled':False })
+        if (user.enabled is False):
+            self.os.update_user({'user_id':user.user_id,
+                                 'project_id': user.project_id,
+                                 'enabled':False })
 
         NOTIFY(5)
 
@@ -192,10 +192,9 @@ class Wrapper:
         u  = User()
         load = self.__get_user_data(id)
         u.load(load)
-        show_full_info(u)
-        # p = self.os.get_project(u)
-        # show_project(u, p)
-        # show_project(u)
+        p = self.os.get_project(u)
+        show_project(u, p)
+        show_project(u)
 
     #  DELETE
     #  Deletes one or multiple users from the database.
