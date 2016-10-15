@@ -177,7 +177,7 @@ class Wrapper:
     #  database.
     def add(self, name, email, enabled, expire, yes):
 
-        user = __generate_user_data(name, email, enabled, expire)
+        user = self.__generate_user_data(name, email, enabled, expire)
 
         show_full_info(user)
         if not yes:
