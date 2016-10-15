@@ -3,9 +3,9 @@ from user        import User
 from bridge      import OpenstackBridge
 from db          import DBManager
 from dateparser  import DateParser
-from alice.view  import View
 from xkcdpass    import xkcd_password as xp
 from prettytable import PrettyTable
+from alice.view  import *
 
 import timestring
 import warnings
@@ -14,19 +14,23 @@ import json
 import ast
 
 
+def is_int(obj):
+    try:
+        int(obj)
+        return True
+    except ValueError:
+        return False
+
 class Wrapper:
 
     os   = None
-    view = None
     db   = None
 
     def __init__(self):
         self.os    = OpenstackBridge()
-        self.view  = View()
         self.db    = DBManager()
 
-
-    def generate_user_data(self, name, email, enabled, expire):
+    def __generate_user_data(self, name, email, enabled, expire):
 
         user = User()
 
@@ -34,62 +38,37 @@ class Wrapper:
         user.email = email
         user.enabled = enabled
 
-        if (self.represent_int(expire)):
+        if (is_int(expire)):
             expire = str(expire) + "d"
 
         user.expiration = (timestring.Range("next " + expire)).end
 
         project_name = (user.name).title() + "'s project"
-        password     = self.generate_password()
+        password     = __generate_password()
 
         user.project_name = project_name
         user.password = password
 
         return user
 
-
-    def add(self, name, email, enabled, expire, yes):
-
-        load = self.get_user_data(email)
-
-        user = self.generate_user_data(name, email, enabled, expire)
-        self.view.show_full_info(user)
-
-        if not yes:
-            self.confirmation()
-        self.create_user(user)
-
-
-    def delete(self, list):
-
-        for id in list:
-            u = self.get_user_data(id)
-            print u
-
-            # self.db.delete(u)
-
-
-    def represent_int(self, obj):
-        try:
-            int(obj)
-            return True
-        except ValueError:
-            return False
-
-
-    def generate_password(self):
+    def __generate_password(self):
         wordfile = xp.locate_wordfile()
-        mywords  = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=5)
-        new_pass = xp.generate_xkcdpassword(mywords,delimiter=".",numwords=4)
+        mywords  = xp.generate_wordlist(wordfile=wordfile,
+                                        min_length=4,
+                                        max_length=5)
+        new_pass = xp.generate_xkcdpassword(mywords,
+                                            delimiter=".",
+                                            numwords=4)
         return new_pass
 
-
-    # Get user's data by name, email or ID.
-    def get_user_data(self, obj):
+    #  __get_user_data
+    #  Receives an ID, which can be a name, email or INT, and
+    #  returns the data associated.
+    def __get_user_data(self, obj):
         db = self.db
         data = None
 
-        if self.represent_int(obj):
+        if (is_int(obj)):
             data = db.select_by('id', obj)
         elif obj.find('@') >= 0:
             data = db.select_by('email', obj)
@@ -101,62 +80,34 @@ class Wrapper:
 
         return data
 
-    # Migrate all users from Openstack to alice's db, so they can be
-    # managed by it's CLI.
-    def migrate(self):
-        db = self.db
 
-        all_users = self.os.get_user()
-
-        services = ['ceilometer', 'nova', 'neutron', 'glance', 'keystone', 'admin']
-
-        for user in all_users:
-            if user.name not in services:
-                try:
-                    found = db.select_by_email(user.email)
-
-                    if found is None:
-                        u = User()
-
-                        u.user_id = user.id
-                        u.project_id = user.default_project_id
-                        u.email = user.email
-                        u.enabled = user.enabled
-                        u.name = user.name
-                        u.expiration = (timestring.Range("next 30d")).end
-                        u.history.register()
-
-                        db.insert(u)
-                except:
-                    continue
-
-
-    def db_add_user(self, user):
+    def __db_add_user(self, user):
         db = self.db
         db.insert(user)
 
-    def create_user(self, user):
+    def __create_user(self, user):
         print
         warnings.filterwarnings("ignore")
 
-        self.view.info(3)
+        INFO(3)
         # self.os.register_user(user)
-        self.view.info(4)
+        INFO(4)
         # self.os.create_network(user)
         user.history.register()
-        self.db_add_user(user)
+        self.__db_add_user(user)
 
         # if (user.enabled is False):
         #     self.os.update_user({'user_id':user.user_id,
         #                          'project_id': user.project_id,
         #                          'enabled':False })
 
-        self.view.notify(5)
+        NOTIFY(5)
 
-    def update_user(self, id, dict):
+
+    def __update_user(self, id, dict):
 
         db = self.db
-        u  = self.get_user_data(id)
+        u  = self.__get_user_data(id)
 
         user = User()
 
@@ -188,45 +139,115 @@ class Wrapper:
                 exp = timestring.Date(dict['expiration'])
                 user.expiration = exp
             else:
-                print " . user %s is not enabled." % (user.name)
+                MSG("user "+ user.name + " is not enabled")
                 return
 
         # self.os.update_user(dict)
         self.db.update(user)
 
-    def retrieve_user(self, id):
 
-        db = self.db
-        u  = User()
-
-        load = self.get_user_data(id)
-
-        if load is None:
-            print "No user found"
-            sys.exit()
-        else:
-            u.load(load)
-            # p = self.os.get_project(u)
-            self.view.show_project(u, p)
-            # self.view.show_project(u)
-
-    def confirmation(self):
+    def __confirmation(self):
 
         yes  = set(['yes', 'y', 'ye'])
         no   = set(['no', 'n'])
 
         add = ''
         while (add not in yes) and (add not in no):
-            add = self.view.question()
+            add = GET_INPUT(2)
             if (add not in yes) and (add not in no):
-                self.view.error(1)
+                ERROR(1)
                 sys.exit()
             if add in yes:
                 break
             else:
-                self.view.error(2)
+                ERROR(2)
                 sys.exit()
 
+    def __line_highlight(self, line, color):
+        line[0] = color(line[0])
+        line[-1] = color(line[-1]) + NORMAL()
+
+    def __line_color(self, line, color):
+        for i in range(0, len(line)):
+            line[i] = FRRED(line[i])
+
+    #  ADD
+    #  Generates user information given name and email.
+    #  Gets confirmation if needed and adds user to the
+    #  database.
+    def add(self, name, email, enabled, expire, yes):
+
+        user = __generate_user_data(name, email, enabled, expire)
+
+        show_full_info(user)
+        if not yes:
+            self.__confirmation()
+        self.__create_user(user)
+
+    #  SHOW
+    #  Displays user information retrieved from the database.
+    #  Receives an id, which can be a name, an email or an INT.
+    def show(self, id):
+
+        u  = User()
+        load = self.__get_user_data(id)
+        u.load(load)
+        show_full_info(u)
+        # p = self.os.get_project(u)
+        # show_project(u, p)
+        # show_project(u)
+
+    #  DELETE
+    #  Deletes one or multiple users from the database.
+    #  Receives an id, which can be a name, an email or an INT.
+    #  TODO: Delete Openstack credentials.
+    def delete(self, list):
+
+        for id in list:
+            u = self.__get_user_data(id)
+            # self.db.delete(u)
+
+    #  MODIFY
+    #  Modifies users information, both from database and Openstack.
+    #  Receives an id, which can be a name, an email or an INT, and
+    #  a dictionary with fields to modify.
+    def modify(self, id, dict):
+        self.__update_user(id, dict)
+
+
+    #  MIGRATE
+    #  Takes users who are in Openstacks database and copies them
+    #  over Alice database. Ignores duplicates, services and admin.
+    def migrate(self):
+        db = self.db
+
+        all_users = self.os.get_user()
+
+        services = ['ceilometer', 'nova', 'neutron', 'glance', 'keystone', 'admin']
+
+        for user in all_users:
+            if user.name not in services:
+                try:
+                    found = db.select_by('email', user.email)
+
+                    if found is None:
+                        u = User()
+
+                        u.user_id = user.id
+                        u.project_id = user.default_project_id
+                        u.email = user.email
+                        u.enabled = user.enabled
+                        u.name = user.name
+                        u.expiration = (timestring.Range("next 30d")).end
+                        u.history.register()
+
+                        db.insert(u)
+                except:
+                    continue
+
+    #  LIST
+    #  Retrieves users given a filter from the database and displays
+    #  in a table manner.
     def list(self, highlight, filter):
 
         db     = self.db
@@ -238,7 +259,7 @@ class Wrapper:
         elif (filter == "disabled"):
             fetch = db.find_enabled(False)
         else:
-            fetch  = db.select_all()
+            fetch = db.select_all()
 
         t = PrettyTable(['ID', 'Name', 'Email', 'Status', 'Expires in'])
 
@@ -272,30 +293,22 @@ class Wrapper:
 
                 # Enables highlight
                 if highlight is True:
-                    if state == 'expired':
-                        v[0] = self.view.RED(v[0])
-                        v[-1] = self.view.RED(v[-1]) + self.view.NORMAL()
-                    if state == 'hold':
-                        v[0] = self.view.YELLOW(v[0])
-                        v[-1] = self.view.YELLOW(v[-1]) + self.view.NORMAL()
+                    if state == 'expired': self.__line_highlight(v, BGRED)
+                    if state == 'hold':    self.__line_highlight(v, BGYELLOW)
                 else:
-                    if state == 'expired':
-                        for i in range(0, len(v)):
-                            v[i] = self.view.red(v[i])
-                    if state == 'hold':
-                        for i in range(0, len(v)):
-                            v[i] = self.view.yellow(v[i])
+                    if state == 'expired': self.__line_color(v, FRRED)
+                    if state == 'hold':    self.__line_color(v, FRYELLOW)
 
                 if str(filter) == state or filter is None or filter == "enabled":
-                    t.add_row(v)
+                   t.add_row(v)
 
             else:
                 state = 'Disabled'
-                t.add_row([self.view.dim(u.id),
-                          self.view.dim(u.name),
-                          self.view.dim(u.email),
-                          self.view.dim(state),
-                          self.view.dim("---")])
+                t.add_row([FRDIM(u.id),
+                          FRDIM(u.name),
+                          FRDIM(u.email),
+                          FRDIM(state),
+                          FRDIM("---")])
 
 
         print t

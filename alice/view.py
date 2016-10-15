@@ -21,90 +21,76 @@ MSG   = ["Wrong input",
          "Done\n"]
 
 
-class View:
+def FRYELLOW(char):
+    return Fore.YELLOW + str(char) + Style.RESET_ALL
 
-    def __init__(self):
-        init(autoreset=True)
+def FRRED(char):
+    return Fore.RED + str(char) + Style.RESET_ALL
 
-    # Usado em LIST
-    def blue(self, char):
-        return Fore.BLUE + str(char) + Style.RESET_ALL
+def BGYELLOW(char):
+    return Back.YELLOW + Fore.BLACK + str(char)
 
-    def magenta(self, char):
-        return Fore.MAGENTA + str(char) + Style.RESET_ALL
+def BGRED(char):
+    return Back.RED + Fore.BLACK + str(char)
 
-    def yellow(self, char):
-        return Fore.YELLOW + str(char) + Style.RESET_ALL
+def NORMAL():
+    return Style.RESET_ALL
 
-    def red(self, char):
-        return Fore.RED + str(char) + Style.RESET_ALL
-
-    def YELLOW(self, char):
-        return Back.YELLOW + Fore.BLACK + str(char)
-
-    def RED(self, char):
-        return Back.RED + Fore.BLACK + str(char)
-
-    def NORMAL(self):
-        return Style.RESET_ALL
-
-    def dim(self, char):
-        return Fore.LIGHTBLACK_EX + str(char) + Style.RESET_ALL
+def FRDIM(char):
+    return Fore.LIGHTBLACK_EX + str(char) + Style.RESET_ALL
 
     # Usado em ADD e SHOW
-    def message(self, content):
-        print(Fore.BLUE + " . " + Style.RESET_ALL + content)
+def MSG(content):
+    print(Fore.BLUE + " . " + Style.RESET_ALL + content)
 
-    def persistent(self, msg):
-        print(Fore.BLACK + DOT + Fore.LIGHTBLACK_EX + str(msg) + Style.RESET_ALL)
+def PERSISTENT(msg):
+    print(Fore.BLACK + DOT + FRDIM(msg))
 
-    def error(self, intg):
-        print(Fore.RED + DOT + Style.RESET_ALL + ERROR[intg])
+def ERROR(intg):
+    print(Fore.RED + DOT + Style.RESET_ALL + ERROR[intg])
 
-    def notify(self, intg):
-        print(Fore.YELLOW + DOT +  Style.RESET_ALL + MSG[intg])
+def NOTIFY(intg):
+    print(Fore.YELLOW + DOT +  Style.RESET_ALL + MSG[intg])
 
-    def info(self, intg):
-        try:
-            print(Fore.BLACK + DOT + Style.RESET_ALL + MSG[intg])
-        except TypeError:
-            print(Fore.BLACK + DOT + Style.RESET_ALL + intg)
+def INFO(intg):
+    try:
+        print(Fore.BLACK + DOT + Style.RESET_ALL + MSG[intg])
+    except TypeError:
+        print(Fore.BLACK + DOT + Style.RESET_ALL + intg)
 
-    def enabled(self, user):
-        if (user.enabled):
-            return (Fore.GREEN + "\033[1mTrue" + Style.RESET_ALL)
-        return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)
+def ENABLED(user):
+    if (user.enabled):
+        return (Fore.GREEN + "\033[1mTrue" + Style.RESET_ALL)
+    return (Fore.RED + "\033[1mFalse" + Style.RESET_ALL)
 
-    def question(self):
-        raw = raw_input('\n' + Fore.BLACK + " : " + Style.RESET_ALL + MSG[2])
-        return raw
+def GET_INPUT(intg):
+    raw = raw_input('\n' + Fore.BLACK + " : " + Style.RESET_ALL + MSG[intg])
+    return raw
 
-    def show_basic_info(self, user):
-        print('')
-        self.message("Username:       %s" % user.name)
-        self.message("Email:          %s" % user.email)
+def show_basic_info(user):
+    print('')
+    MSG("Username:       %s" % user.name)
+    MSG("Email:          %s" % user.email)
 
-    def show_full_info(self, user):
-        self.show_basic_info(user)
-        self.persistent("Project Name:   %s" % user.project_name)
-        self.persistent("Password:       %s" % user.password)
-        self.persistent("Enabled:        %s" % self.enabled(user))
+def show_full_info(user):
+    show_basic_info(user)
+    PERSISTENT("Project Name:   %s" % user.project_name)
+    PERSISTENT("Password:       %s" % user.password)
+    PERSISTENT("Enabled:        %s" % ENABLED(user))
 
-    def show_project(self, user, p):
-        print('')
+def show_project(user, p):
+    print('')
+    INFO('Username:       %s' % user.name)
+    INFO('Email:          %s' % user.email)
+    INFO('Project Name:   %s' % p.name)
+    INFO('P Description:  %s' % p.description)
+    INFO('Enabled:        %s' % self.enabled(user))
+    INFO('Expires at:     %s' % user.expiration.format("%d %b %Y"))
+    print('')
 
-        self.info('Username:       %s' % user.name)
-        self.info('Email:          %s' % user.email)
-        self.info('Project Name:   %s' % p.name)
-        self.info('P Description:  %s' % p.description)
-        self.info('Enabled:        %s' % self.enabled(user))
-        self.info('Expires at:     %s' % user.expiration.format("%d %b %Y"))
+    if user.enabled is True:
+        INFO('Active for %s ' % user.history.activity())
+    else:
+        INFO('Deactivated for %s' % user.history.activity())
 
-        print('')
-
-        if user.enabled is True:
-            self.info('Active for %s ' % user.history.activity())
-        else:
-            self.info('Deactivated for %s' % user.history.activity())
-
-        print('')
+    print('')

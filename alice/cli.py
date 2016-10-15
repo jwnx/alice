@@ -51,7 +51,7 @@ def list(highlight, filter):
 @cli.command()
 @click.argument('id', nargs=1, type=click.STRING)
 def show(id):
-    w.retrieve_user(id)
+    w.show(id)
 
 @cli.command()
 @click.argument('id', nargs=-1, type=click.STRING)
@@ -83,7 +83,7 @@ def modify(id, attributes):
         key, value = att.split(":", 1)
         dict[key] = value
 
-    w.update_user(id, dict)
+    w.modify(id, dict)
 
 
 # @cli.command()
